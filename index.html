@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>AutoTrading AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white p-4">
+<h1 class="text-2xl font-bold">AutoTrading AI <span class="text-green-400 text-xs">● PAPER MODE</span></h1>
+<div class="grid grid-cols-2 gap-3 mt-4">
+<div class="bg-zinc-900 p-3 rounded-lg">Balance: ₹<span id="bal">100000</span></div>
+<div class="bg-zinc-900 p-3 rounded-lg">Status: <span id="status">STOPPED</span></div>
+</div>
+<button id="btn" class="mt-4 w-full py-3 bg-green-500 rounded-full font-bold text-black">START BOT</button>
+<div class="mt-4 bg-zinc-900 p-3 rounded-lg">
+<p>Signal: <span id="signal">HOLD</span></p>
+<p>Price: ₹<span id="price">0</span></p>
+<p>AI Confidence: <span id="conf">0</span>%</p>
+</div>
+<div class="mt-4 bg-zinc-900 p-3 rounded-lg">
+<h2 class="font-bold">Trade History</h2>
+<div id="history" class="text-xs mt-2">No trades yet</div>
+</div>
+<script>
+let bal=100000, on=false, trades=[];
+let btn=document.getElementById('btn');
+btn.onclick=()=>{
+ on=!on;
+ document.getElementById('status').innerText= on? "ACTIVE 🟢" : "STOPPED 🔴";
+ btn.innerText= on? "STOP BOT" : "START BOT";
+ btn.className= on? "mt-4 w-full py-3 bg-red-500 rounded-full font-bold text-black" : "mt-4 w-full py-3 bg-green-500 rounded-full font-bold text-black";
+}
+setInterval(()=>{
+ if(!on) return;
+ let price = (24000 + Math.random()*100).toFixed(2);
+ let rsi = Math.floor(Math.random()*60+20);
+ let signal = rsi<35? "BUY" : rsi>65? "SELL" : "HOLD";
+ let conf = Math.floor(Math.random()*30+70);
+ document.getElementById('price').innerText=price;
+ document.getElementById('signal').innerText=signal;
+ document.getElementById('conf').innerText=conf;
+ if(conf>75 && signal!="HOLD"){
+   let pnl = Math.floor(Math.random()*700-200);
+   bal+=pnl;
+   document.getElementById('bal').innerText=bal.toFixed(2);
+   trades.unshift(`${signal} @ ${price} | PnL: ${pnl>0?'+':''}${pnl} | Conf: ${conf}%`);
+   document.getElementById('history').innerHTML=trades.join('<br>');
+ }
+},2000);
+</script>
+</body>
+</html>
