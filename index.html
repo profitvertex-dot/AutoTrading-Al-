@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BTC Auto Bot - REAL</title>
+<title>BTC Auto Bot - REAL FINAL</title>
 <style>
 body{background:#0b0e11;color:#fff;font-family:Arial;padding:15px}
 .card{background:#151a21;padding:15px;border-radius:12px;margin-bottom:12px;border:1px solid #222}
@@ -13,19 +13,18 @@ body{background:#0b0e11;color:#fff;font-family:Arial;padding:15px}
 </head>
 <body>
 <div class="card">
-<div>Balance: <span id="bal">₹--</span> <small id="balType"></small></div>
+<div>Balance: <span id="bal">₹--</span> <small id="balType"></small> | <span id="bdet" style="font-size:11px;color:#888"></span></div>
 <div class="big" id="price">Loading...</div>
 <div>BTC/USDT: <span id="price2">--</span></div>
 <div>Signal: <b id="sig">--</b> | Confidence: <b id="conf">--</b> | RSI: <b id="rsi">--</b></div>
 <div style="margin-top:10px">Last Entry: <span id="entry">@ --</span> | PnL: <span id="pnl">--</span></div>
 <button class="btn" id="tradeBtn" style="background:#2b3139;color:#fff" onclick="toggleBot()">Bot: STOP</button>
-<div style="font-size:12px;margin-top:8px;color:#888">Real trading ON - 0.0001 BTC test order</div>
+<div style="font-size:12px;margin-top:8px;color:#888">Real trading ON - Need ₹1000+ INR in CoinDCX</div>
 </div>
-
-<div class="card" id="log" style="height:200px;overflow:auto;font-size:12px"></div>
+<div class="card" id="log" style="height:250px;overflow:auto;font-size:12px"></div>
 
 <script>
-let baseBal=100011, entryPrice=0, botOn=false, lastPrice=0, rsi=50;
+let baseBal=0.01, entryPrice=0, botOn=false, lastPrice=0, rsi=50;
 let prices=[];
 
 function addLog(m){
@@ -34,32 +33,39 @@ function addLog(m){
  document.getElementById('log').prepend(d);
 }
 
-// REAL BALANCE
+async function loadHistory(){
+  try{
+    let r=await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=14');
+    let d=await r.json();
+    prices = d.map(c=>parseFloat(c[4]));
+    addLog('History loaded: '+prices.length+' candles');
+  }catch(e){ addLog('History fail'); }
+}
+loadHistory();
+
 async function updateBalance(){
  try{
   let r=await fetch('/api/balance');
   let d=await r.json();
-  if(d.balance){
+  if(d.balance!==undefined){
     baseBal=parseFloat(d.balance);
     document.getElementById('bal').innerText='₹'+baseBal.toFixed(2);
-    document.getElementById('balType').innerText = d.demo? '(DEMO)' : '(REAL CoinDCX)';
-    if(d.demo) document.getElementById('balType').style.color='#f3ba2f';
+    document.getElementById('balType').innerText = d.inr!==undefined? '(REAL)' : '(REAL CoinDCX)';
+    if(d.inr!==undefined) document.getElementById('bdet').innerText = 'INR:'+d.inr.toFixed(2)+' BTC:'+d.btc;
   }
  }catch(e){ document.getElementById('bal').innerText='₹'+baseBal.toFixed(2); }
 }
 updateBalance();
 setInterval(updateBalance, 15000);
 
-// LIVE PRICE + RSI FIX
 async function updatePrice(){
  try{
   let r=await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
   let d=await r.json();
   lastPrice=parseFloat(d.price);
   prices.push(lastPrice);
-  if(prices.length>14) prices.shift();
+  if(prices.length>20) prices.shift();
 
-  // RSI Calc
   if(prices.length>=14){
     let gains=0,losses=0;
     for(let i=1;i<prices.length;i++){
@@ -74,7 +80,6 @@ async function updatePrice(){
   document.getElementById('price2').innerText='$'+lastPrice.toFixed(2);
   document.getElementById('rsi').innerText=rsi.toFixed(1);
 
-  // SIGNAL LOGIC
   let signal='HOLD', conf=50;
   if(rsi<30){ signal='BUY'; conf=85; }
   else if(rsi>70){ signal='SELL'; conf=85; }
@@ -85,36 +90,28 @@ async function updatePrice(){
   document.getElementById('sig').className = signal=='BUY'?'green':signal=='SELL'?'red':'yellow';
   document.getElementById('conf').innerText=conf+'%';
 
-  // AUTO TRADE - REAL ORDER
   if(botOn && conf>75 && signal!='HOLD'){
-    if(entryPrice==0 || (signal=='SELL' && lastPrice>entryPrice) || (signal=='BUY' && lastPrice<entryPrice*0.99)){
-      if(signal=='BUY'){
+    if(signal=='BUY' && entryPrice==0){
         entryPrice=lastPrice;
         document.getElementById('entry').innerText='@ $'+entryPrice.toFixed(2);
         addLog('BUY @ $'+lastPrice.toFixed(2)+' RSI:'+rsi.toFixed(1));
         placeRealOrder('buy');
-      }else if(signal=='SELL' && entryPrice>0){
+    }else if(signal=='SELL' && entryPrice>0){
         let pnl = ((lastPrice-entryPrice)/entryPrice*100).toFixed(2);
         document.getElementById('pnl').innerText=pnl+'%';
         addLog('SELL @ $'+lastPrice.toFixed(2)+' PnL:'+pnl+'%');
         placeRealOrder('sell');
         entryPrice=0;
-      }
     }
   }
-
- }catch(e){ addLog('Price error'); }
+ }catch(e){}
 }
 
 async function placeRealOrder(side){
  try{
-  let r=await fetch('/api/place-order',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({side: side, price: lastPrice})
-  });
+  let r=await fetch('/api/place-order',{method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({side: side, price: lastPrice})});
   let d=await r.json();
-  addLog('REAL ORDER '+side.toUpperCase()+' : '+JSON.stringify(d).substring(0,100));
+  addLog('REAL ORDER '+side.toUpperCase()+' : '+JSON.stringify(d).substring(0,120));
  }catch(e){ addLog('Order fail: '+e.message); }
 }
 
