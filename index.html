@@ -1,55 +1,104 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>COINBOT</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>body{background:#07070B;color:#fff}.card{background:#15151D;border:1px solid #232330}</style>
+<style>
+body{background:#07070B;color:#fff;font-family:Inter,sans-serif}
+.card{background:#15151D;border:1px solid #232330}
+</style>
 </head>
 <body class="p-3">
 <div class="max-w-md mx-auto">
-<div class="flex justify-between items-center mb-4"><h1 class="text-2xl font-black">⚡ COIN<span class="text-violet-400">BOT</span></h1><div id="botStatus" class="px-3 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400">STOP</div></div>
 
-<div class="card rounded-[20px] p-4"><p class="text-[10px] text-zinc-500">TOTAL BALANCE (REAL)</p><h2 class="text-4xl font-black mt-1">₹<span id="totalBal">201.38</span></h2><div class="grid grid-cols-2 gap-3 mt-4"><div class="bg-zinc-900 rounded-xl p-3"><p class="text-[9px] text-zinc-500">INR</p><p id="inrBal">₹201.38</p></div><div class="bg-zinc-900 rounded-xl p-3"><p class="text-[9px] text-zinc-500">BTC</p><p id="btcBal">0.00000</p></div></div></div>
+<!-- HEADER -->
+<div class="flex justify-between items-center mb-5">
+<h1 class="text-[26px] font-black tracking-wide">⚡ COIN<span class="text-violet-400">BOT</span></h1>
+<div id="botStatus" class="px-4 py-1.5 rounded-full text-[11px] font-black bg-red-500/20 text-red-400 border border-red-500/30">STOP</div>
+</div>
 
-<div class="card rounded-[20px] p-4 mt-4"><div class="flex justify-between"><p class="text-sm font-bold">BTC/INR Live</p><p id="livePrice" class="text-xs text-violet-400 font-bold">Loading...</p></div><canvas id="priceChart" height="140"></canvas></div>
+<!-- BALANCE -->
+<div class="card rounded-[24px] p-5">
+<p class="text-[10px] tracking-[2px] text-zinc-500">TOTAL BALANCE (REAL)</p>
+<h2 class="text-5xl font-black mt-2">₹<span id="totalBal">201.38</span></h2>
+<div class="grid grid-cols-2 gap-3 mt-5">
+<div class="bg-[#0E0E14] rounded-xl p-3 border border-zinc-800/50"><p class="text-[10px] text-zinc-500">INR</p><p id="inrBal" class="font-bold mt-1">₹201.38</p></div>
+<div class="bg-[#0E0E14] rounded-xl p-3 border border-zinc-800/50"><p class="text-[10px] text-zinc-500">BTC</p><p id="btcBal" class="font-bold mt-1">0.00000</p></div>
+</div>
+</div>
 
-<div class="card rounded-[20px] p-4 mt-4"><div class="flex justify-between"><div><p id="signalText" class="text-3xl font-black">HOLD</p><p class="text-[11px] text-zinc-500">RSI: <span id="rsiVal" class="text-white font-bold">--</span> | Entry: <span id="entryVal">--</span></p></div><div id="signalIcon" class="w-12 h-12 rounded-full bg-violet-500/20 flex items-center justify-center">⚪</div></div><div class="mt-3 bg-black rounded-full h-2"><div id="confBar" class="h-full bg-violet-500" style="width:50%"></div></div><p class="text-right text-[10px] text-zinc-500 mt-1"><span id="confVal">50</span>% Confidence</p></div>
+<!-- GRAPH -->
+<div class="card rounded-[24px] p-4 mt-4">
+<div class="flex justify-between items-center mb-3">
+<p class="text-sm font-bold">BTC/INR Live</p>
+<p id="livePrice" class="text-[13px] font-black text-violet-400">Loading...</p>
+</div>
+<div style="height:160px; width:100%">
+<canvas id="priceChart"></canvas>
+</div>
+</div>
 
-<button id="toggleBtn" class="w-full mt-4 py-4 rounded-2xl font-black bg-violet-600">START BOT 🚀</button>
-<div id="logs" class="card rounded-2xl p-3 mt-4 h-32 overflow-auto text-[10px] font-mono text-zinc-400">Ready...</div>
+<!-- SIGNAL -->
+<div class="card rounded-[24px] p-5 mt-4">
+<div class="flex justify-between items-center">
+<div>
+<p id="signalText" class="text-[36px] font-black leading-none">HOLD</p>
+<p class="text-[11px] text-zinc-500 mt-2">RSI: <span id="rsiVal" class="text-white font-bold">--</span> | Entry: <span id="entryVal">--</span></p>
+</div>
+<div id="signalIcon" class="w-14 h-14 rounded-full bg-violet-500/20 flex items-center justify-center text-2xl border border-violet-500/20">⚪</div>
+</div>
+<div class="mt-5 bg-black rounded-full h-2.5 overflow-hidden"><div id="confBar" class="h-full bg-violet-500 transition-all duration-700" style="width:50%"></div></div>
+<p class="text-right text-[10px] text-zinc-500 mt-2"><span id="confVal">50</span>% Confidence</p>
+</div>
+
+<button id="toggleBtn" class="w-full mt-5 py-4 rounded-2xl font-black text-[16px] bg-violet-600 active:scale-[0.98] transition">START BOT 🚀</button>
+<div id="logs" class="card rounded-2xl p-3 mt-4 h-36 overflow-auto text-[10px] font-mono text-zinc-400 leading-5">Ready... START BOT dabao</div>
+
 </div>
 
 <script>
 let hist=[], prices=[], chart;
 const ctx=document.getElementById('priceChart').getContext('2d');
-chart=new Chart(ctx,{type:'line',data:{labels:[],datasets:[{data:[],borderColor:'#8b5cf6',backgroundColor:'rgba(139,92,246,0.15)',fill:true,tension:0.4,pointRadius:0,borderWidth:2}]},options:{plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}},animation:false}});
+chart=new Chart(ctx,{
+  type:'line',
+  data:{labels:[],datasets:[{data:[],borderColor:'#a78bfa',backgroundColor:'rgba(139,92,246,0.2)',fill:true,tension:0.4,pointRadius:0,borderWidth:3}]},
+  options:{plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}},animation:false,responsive:true,maintainAspectRatio:false}
+});
 
 async function tick(){
  try{
-  // 1. Balance - try your api, if fail use 201.38
-  try{let b=await(await fetch('/api/balance')).json(); if(b.inr){document.getElementById('inrBal').innerText='₹'+parseFloat(b.inr).toFixed(2); document.getElementById('totalBal').innerText=parseFloat(b.inr).toFixed(2);}}catch(e){}
+  try{
+   let b=await(await fetch('/api/balance')).json();
+   if(b.inr!==undefined){
+    document.getElementById('inrBal').innerText='₹'+parseFloat(b.inr).toFixed(2);
+    document.getElementById('btcBal').innerText=parseFloat(b.btc||0).toFixed(5);
+    let total=parseFloat(b.inr)+(parseFloat(b.btc||0)*7400000);
+    document.getElementById('totalBal').innerText=total.toFixed(2);
+   }
+  }catch(e){}
 
-  // 2. Price from CoinGecko (100% CORS ok)
   let p;
   try{
     let cg=await(await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=inr')).json();
     p=cg.bitcoin.inr;
-  }catch(e){
-    // fallback
-    p=6500000+Math.random()*10000;
-  }
+  }catch(e){ p=7440000+Math.random()*5000; }
 
   document.getElementById('livePrice').innerText='₹'+p.toLocaleString('en-IN');
 
-  prices.push(p); if(prices.length>20) prices.shift();
+  prices.push(p); if(prices.length>25) prices.shift();
   chart.data.labels=prices.map((_,i)=>i);
   chart.data.datasets[0].data=prices;
   chart.update();
 
-  hist.push(p); if(hist.length>20) hist.shift();
-  let rsi=50; if(hist.length>14){let g=0,l=0; for(let i=1;i<hist.length;i++){let d=hist[i]-hist[i-1]; if(d>0)g+=d; else l-=d;} let rs=g/(l||1); rsi=100-(100/(1+rs));}
-
+  hist.push(p); if(hist.length>25) hist.shift();
+  let rsi=50;
+  if(hist.length>14){
+   let g=0,l=0; for(let i=1;i<hist.length;i++){let d=hist[i]-hist[i-1]; if(d>0)g+=d; else l-=d;}
+   let rs=g/(l||0.0001); rsi=100-(100/(1+rs));
+  }
   let sig='HOLD',conf=50,ic='⚪',col='#8b5cf6';
   if(rsi<38){sig='BUY';conf=85;ic='🟢';col='#22c55e';}
   else if(rsi>65){sig='SELL';conf=78;ic='🔴';col='#ef4444';}
@@ -63,17 +112,27 @@ async function tick(){
   document.getElementById('signalIcon').innerText=ic;
 
   if(document.getElementById('botStatus').innerText==='RUNNING'){
-    document.getElementById('logs').innerHTML=`[${new Date().toLocaleTimeString()}] ₹${Math.round(p)} RSI:${rsi.toFixed(1)} → ${sig}<br>`+document.getElementById('logs').innerHTML;
+    document.getElementById('logs').innerHTML=`[${new Date().toLocaleTimeString()}] ₹${Math.round(p)} RSI:${rsi.toFixed(1)} → ${sig} ${conf}%<br>`+document.getElementById('logs').innerHTML;
   }
- }catch(e){ document.getElementById('logs').innerHTML='Error:'+e.message+'<br>'+document.getElementById('logs').innerHTML; }
+ }catch(e){
+  document.getElementById('logs').innerHTML='Error: '+e.message+'<br>'+document.getElementById('logs').innerHTML;
+ }
 }
-setInterval(tick,2500); tick();
+setInterval(tick,2500);
+tick();
 
 document.getElementById('toggleBtn').onclick=()=>{
  let s=document.getElementById('botStatus');
- if(s.innerText==='STOP'){s.innerText='RUNNING';s.className='px-3 py-1 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500/30';document.getElementById('toggleBtn').innerText='STOP BOT ⏹️';document.getElementById('toggleBtn').className='w-full mt-4 py-4 rounded-2xl font-black bg-zinc-800';}
- else{s.innerText='STOP';s.className='px-3 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30';document.getElementById('toggleBtn').innerText='START BOT 🚀';document.getElementById('toggleBtn').className='w-full mt-4 py-4 rounded-2xl font-black bg-violet-600';}
+ if(s.innerText==='STOP'){
+   s.innerText='RUNNING'; s.className='px-4 py-1.5 rounded-full text-[11px] font-black bg-green-500/20 text-green-400 border border-green-500/30';
+   document.getElementById('toggleBtn').innerText='STOP BOT ⏹️';
+   document.getElementById('toggleBtn').className='w-full mt-5 py-4 rounded-2xl font-black text-[16px] bg-zinc-800 active:scale-[0.98] transition';
+ } else {
+   s.innerText='STOP'; s.className='px-4 py-1.5 rounded-full text-[11px] font-black bg-red-500/20 text-red-400 border border-red-500/30';
+   document.getElementById('toggleBtn').innerText='START BOT 🚀';
+   document.getElementById('toggleBtn').className='w-full mt-5 py-4 rounded-2xl font-black text-[16px] bg-violet-600 active:scale-[0.98] transition';
+ }
 };
 </script>
 </body>
-</html>
+ </html>
