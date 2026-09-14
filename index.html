@@ -1,130 +1,60 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BTC Auto Bot - REAL FINAL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-body{background:#0b0e11;color:#fff;font-family:Arial;padding:15px}
-.card{background:#151a21;padding:15px;border-radius:12px;margin-bottom:12px;border:1px solid #222}
-.big{font-size:32px;font-weight:bold}
-.green{color:#0ecb81}.red{color:#f6465d}.yellow{color:#f3ba2f}
-.btn{width:100%;padding:12px;border:0;border-radius:8px;font-weight:bold;margin-top:10px}
+body{font-family:'Space Grotesk',sans-serif;background:#0a0a0f; color:white}
+.glass{background:rgba(255,255,255,0.05); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.1)}
+.neon{box-shadow:0 0 30px rgba(139,92,246,0.3)}
 </style>
 </head>
-<body>
-<div class="card">
-<div>Balance: <span id="bal">₹--</span> <small id="balType"></small> | <span id="bdet" style="font-size:11px;color:#888"></span></div>
-<div class="big" id="price">Loading...</div>
-<div>BTC/USDT: <span id="price2">--</span></div>
-<div>Signal: <b id="sig">--</b> | Confidence: <b id="conf">--</b> | RSI: <b id="rsi">--</b></div>
-<div style="margin-top:10px">Last Entry: <span id="entry">@ --</span> | PnL: <span id="pnl">--</span></div>
-<button class="btn" id="tradeBtn" style="background:#2b3139;color:#fff" onclick="toggleBot()">Bot: STOP</button>
-<div style="font-size:12px;margin-top:8px;color:#888">Real trading ON - Need ₹1000+ INR in CoinDCX</div>
+<body class="p-4">
+<div class="max-w-md mx-auto">
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">⚡ COIN<span class="text-violet-400">BOT</span></h1>
+    <div id="botStatus" class="px-4 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30">STOP</div>
+  </div>
+
+  <!-- Balance Card -->
+  <div class="glass neon rounded-[24px] p-5 mb-4">
+    <p class="text-xs text-zinc-400 tracking-widest">TOTAL BALANCE (REAL)</p>
+    <h2 class="text-4xl font-bold mt-1">₹<span id="totalBal">201.38</span></h2>
+    <div class="grid grid-cols-2 gap-3 mt-5">
+      <div class="bg-white/[0.05] rounded-2xl p-3">
+        <p class="text-[10px] text-zinc-500">INR</p>
+        <p id="inrBal" class="font-bold text-lg">₹201.38</p>
+      </div>
+      <div class="bg-white/[0.05] rounded-2xl p-3">
+        <p class="text-[10px] text-zinc-500">BTC</p>
+        <p id="btcBal" class="font-bold text-lg">0.00000</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Signal Card -->
+  <div class="glass rounded-[24px] p-5 mb-4">
+    <div class="flex justify-between items-center">
+      <div>
+        <p id="signalText" class="text-3xl font-bold">HOLD</p>
+        <p class="text-xs text-zinc-500 mt-1">RSI: <span id="rsiVal">--</span> | Entry: <span id="entryVal">--</span></p>
+      </div>
+      <div class="w-16 h-16 rounded-full bg-violet-500/20 flex items-center justify-center text-2xl" id="signalIcon">⚪</div>
+    </div>
+    <div class="mt-4 bg-black/50 rounded-full h-2 overflow-hidden">
+      <div id="confBar" class="h-full bg-violet-500 transition-all" style="width:50%"></div>
+    </div>
+    <p class="text-right text-[10px] mt-1 text-zinc-500"><span id="confVal">0</span>% Confidence</p>
+  </div>
+
+  <!-- Controls -->
+  <button id="toggleBtn" class="w-full py-4 rounded-2xl font-bold bg-violet-600 hover:bg-violet-500 transition">START BOT 🚀</button>
+
+  <!-- Logs -->
+  <div class="glass rounded-2xl p-3 mt-4 h-40 overflow-y-auto text-[11px] font-mono" id="logs">Logs loading...</div>
 </div>
-<div class="card" id="log" style="height:250px;overflow:auto;font-size:12px"></div>
-
-<script>
-let baseBal=0.01, entryPrice=0, botOn=false, lastPrice=0, rsi=50;
-let prices=[];
-
-function addLog(m){
- let d=document.createElement('div');
- d.innerText=new Date().toLocaleTimeString()+' - '+m;
- document.getElementById('log').prepend(d);
-}
-
-async function loadHistory(){
-  try{
-    let r=await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=14');
-    let d=await r.json();
-    prices = d.map(c=>parseFloat(c[4]));
-    addLog('History loaded: '+prices.length+' candles');
-  }catch(e){ addLog('History fail'); }
-}
-loadHistory();
-
-async function updateBalance(){
- try{
-  let r=await fetch('/api/balance');
-  let d=await r.json();
-  if(d.balance!==undefined){
-    baseBal=parseFloat(d.balance);
-    document.getElementById('bal').innerText='₹'+baseBal.toFixed(2);
-    document.getElementById('balType').innerText = d.inr!==undefined? '(REAL)' : '(REAL CoinDCX)';
-    if(d.inr!==undefined) document.getElementById('bdet').innerText = 'INR:'+d.inr.toFixed(2)+' BTC:'+d.btc;
-  }
- }catch(e){ document.getElementById('bal').innerText='₹'+baseBal.toFixed(2); }
-}
-updateBalance();
-setInterval(updateBalance, 15000);
-
-async function updatePrice(){
- try{
-  let r=await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
-  let d=await r.json();
-  lastPrice=parseFloat(d.price);
-  prices.push(lastPrice);
-  if(prices.length>20) prices.shift();
-
-  if(prices.length>=14){
-    let gains=0,losses=0;
-    for(let i=1;i<prices.length;i++){
-      let diff=prices[i]-prices[i-1];
-      if(diff>0) gains+=diff; else losses-=diff;
-    }
-    let rs = gains/(losses||1);
-    rsi = 100 - (100/(1+rs));
-  }
-
-  document.getElementById('price').innerText='$'+lastPrice.toFixed(2);
-  document.getElementById('price2').innerText='$'+lastPrice.toFixed(2);
-  document.getElementById('rsi').innerText=rsi.toFixed(1);
-
-  let signal='HOLD', conf=50;
-  if(rsi<30){ signal='BUY'; conf=85; }
-  else if(rsi>70){ signal='SELL'; conf=85; }
-  else if(rsi<40){ signal='BUY'; conf=65; }
-  else if(rsi>60){ signal='SELL'; conf=65; }
-
-  document.getElementById('sig').innerText=signal;
-  document.getElementById('sig').className = signal=='BUY'?'green':signal=='SELL'?'red':'yellow';
-  document.getElementById('conf').innerText=conf+'%';
-
-  if(botOn && conf>75 && signal!='HOLD'){
-    if(signal=='BUY' && entryPrice==0){
-        entryPrice=lastPrice;
-        document.getElementById('entry').innerText='@ $'+entryPrice.toFixed(2);
-        addLog('BUY @ $'+lastPrice.toFixed(2)+' RSI:'+rsi.toFixed(1));
-        placeRealOrder('buy');
-    }else if(signal=='SELL' && entryPrice>0){
-        let pnl = ((lastPrice-entryPrice)/entryPrice*100).toFixed(2);
-        document.getElementById('pnl').innerText=pnl+'%';
-        addLog('SELL @ $'+lastPrice.toFixed(2)+' PnL:'+pnl+'%');
-        placeRealOrder('sell');
-        entryPrice=0;
-    }
-  }
- }catch(e){}
-}
-
-async function placeRealOrder(side){
- try{
-  let r=await fetch('/api/place-order',{method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({side: side, price: lastPrice})});
-  let d=await r.json();
-  addLog('REAL ORDER '+side.toUpperCase()+' : '+JSON.stringify(d).substring(0,120));
- }catch(e){ addLog('Order fail: '+e.message); }
-}
-
-function toggleBot(){
- botOn=!botOn;
- let b=document.getElementById('tradeBtn');
- b.innerText='Bot: '+(botOn?'RUNNING':'STOP');
- b.style.background=botOn?'#0ecb81':'#2b3139';
- addLog(botOn?'Bot STARTED - REAL MODE':'Bot STOPPED');
-}
-
-setInterval(updatePrice, 3000);
-updatePrice();
-</script>
+<script src="/app.js"></script>
 </body>
 </html>
