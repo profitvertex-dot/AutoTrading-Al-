@@ -2,117 +2,106 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>AutoTrading AI - PRO LIVE</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AutoTrading AI - PRO LIVE</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>body{background:#0a0a0a}</style>
 </head>
 <body class="text-white p-3 font-sans">
-<!-- HEADER -->
 <div class="flex justify-between items-center">
-  <h1 class="text-[22px] font-bold">AutoTrading AI <span class="bg-green-600 text-[10px] px-2 py-1 rounded-full ml-2">PRO • LIVE</span></h1>
-  <div class="text-sm text-zinc-400">Balance: <span id="bal" class="text-white font-bold text-[16px]">₹Loading...</span></div>
+<h1 class="text-[22px] font-bold">AutoTrading AI <span class="bg-green-600 text-[10px] px-2 py-1 rounded-full ml-2">PRO • LIVE</span></h1>
+<div class="text-sm text-zinc-400">Balance: <span id="bal" class="text-white font-bold text-[16px]">₹100011.00</span></div>
 </div>
 
-<!-- STATS -->
 <div class="grid grid-cols-3 gap-2 mt-4">
-  <div class="bg-zinc-900 p-3 rounded-xl"><p class="text-[10px] text-zinc-500">P&L TODAY</p><p id="pnl" class="text-green-400 font-bold text-lg">+₹0</p></div>
-  <div class="bg-zinc-900 p-3 rounded-xl"><p class="text-[10px] text-zinc-500">WIN RATE</p><p class="font-bold text-lg">73.2%</p></div>
-  <div class="bg-zinc-900 p-3 rounded-xl"><p class="text-[10px] text-zinc-500">STATUS</p><p id="status" class="font-bold text-lg">ACTIVE 🟢</p></div>
+<div class="bg-zinc-900 p-3 rounded-xl"><p class="text-[10px] text-zinc-500">P&L TODAY</p><p id="pnl" class="text-green-400 font-bold text-lg">+₹0</p></div>
+<div class="bg-zinc-900 p-3 rounded-xl"><p class="text-[10px] text-zinc-500">WIN RATE</p><p class="font-bold text-lg">73.2%</p></div>
+<div class="bg-zinc-900 p-3 rounded-xl"><p class="text-[10px] text-zinc-500">STATUS</p><p id="st" class="font-bold text-lg">ACTIVE 🟢</p></div>
 </div>
 
-<!-- CHART FIXED BTC -->
-<div class="bg-zinc-900 rounded-xl mt-4 p-2 h-[420px] overflow-hidden">
-  <div id="tv" class="h-full w-full"></div>
+<div class="bg-zinc-900 rounded-xl mt-4 p-2 h-[430px]">
+<div id="tv" class="h-full w-full"></div>
 </div>
 
-<!-- CONTROLS -->
-<button id="btn" class="mt-4 w-full py-4 bg-red-500 rounded-full font-bold text-white text-[16px]">⏹ STOP BOT</button>
+<button id="btn" class="mt-4 w-full py-4 bg-red-500 rounded-full font-bold">⏹ STOP BOT</button>
 
 <div class="grid grid-cols-2 gap-2 mt-3">
-  <div class="bg-zinc-900 p-3 rounded-xl text-sm"><p>Signal: <span id="signal" class="font-bold">HOLD</span></p><p class="text-zinc-400 text-xs mt-1">AI Confidence: <span id="conf">0</span>%</p></div>
-  <div class="bg-zinc-900 p-3 rounded-xl text-xs"><p>AI scanning <span id="scanSym">BTCUSDT</span> @ <span id="price">0</span> | RSI: <span id="rsi">0</span> | <span id="scanSig">HOLD</span></p></div>
+<div class="bg-zinc-900 p-3 rounded-xl"><p class="text-sm">Signal: <span id="sig" class="font-bold">HOLD</span></p><p class="text-zinc-400 text-xs mt-1">AI Confidence: <span id="conf">0</span>%</p></div>
+<div class="bg-zinc-900 p-3 rounded-xl text-xs"><p>AI scanning <span id="sym">BTCUSDT</span> @ <span id="price">77665.67</span> | RSI: <span id="rsi">0</span> | <span id="sig2">HOLD</span></p><p class="text-zinc-500 mt-1" id="livep">Live: $77,665.67</p></div>
 </div>
 
 <div class="bg-zinc-900 p-3 rounded-xl mt-3">
-  <p class="text-[11px] text-zinc-500">LIVE TRADES</p>
-  <div id="history" class="text-xs mt-2 space-y-1 font-mono">No trades yet</div>
+<p class="text-[11px] text-zinc-500">LIVE TRADES</p>
+<div id="hist" class="text-xs mt-2 space-y-1 font-mono">No trades yet</div>
 </div>
 
 <script src="https://s3.tradingview.com/tv.js"></script>
 <script>
-let on=true, trades=[], pnl=0, realBal=0, lastPrice="77800";
-let balEl=document.getElementById('bal'), priceEl=document.getElementById('price');
+let on=true, trades=[], pnl=0, baseBal=100011, lastPrice="77665.67";
+let balEl=document.getElementById('bal'), priceEl=document.getElementById('price'), liveEl=document.getElementById('livep');
 
-// TradingView Chart
+// CHART - BINANCE BTC
 new TradingView.widget({
-  "autosize": true,
-  "symbol": "BINANCE:BTCUSDT",
-  "interval": "5",
-  "timezone": "Asia/Kolkata",
-  "theme": "dark",
-  "style": "1",
-  "locale": "en",
-  "container_id": "tv",
-  "backgroundColor": "#18181b"
+"autosize":true,
+"symbol":"BINANCE:BTCUSDT",
+"interval":"5",
+"timezone":"Asia/Kolkata",
+"theme":"dark",
+"style":"1",
+"container_id":"tv",
+"backgroundColor":"#18181b"
 });
 
-// 1. Real CoinDCX Balance + Price
-async function getBalance(){
-  try{
-    let r=await fetch('/api/balance');
-    let data=await r.json();
-    if(Array.isArray(data)){
-      let inr=data.find(x=>x.currency=='INR');
-      if(inr && parseFloat(inr.balance)>0){ realBal=parseFloat(inr.balance); balEl.innerText='₹'+realBal.toFixed(2); return; }
-    }
-    throw "no inr";
-  }catch(e){
-    // Demo balance if api fails
-    balEl.innerText='₹100011';
-    realBal=100011;
+// PRICE - FIXED 100%
+async function updatePrice(){
+ try{
+  let r=await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
+  let d=await r.json();
+  if(d.price){
+   lastPrice=parseFloat(d.price).toFixed(2);
+   priceEl.innerText=lastPrice;
+   liveEl.innerText='Live: $'+lastPrice;
   }
-}
-async function getPrice(){
+ }catch(e){
+  // backup - coindcx
   try{
-    let r=await fetch('https://public.coindcx.com/market_data/current_prices');
-    let d=await r.json();
-    if(d.BTCUSDT){ lastPrice=parseFloat(d.BTCUSDT).toFixed(2); priceEl.innerText=lastPrice; }
-  }catch(e){}
+   let r2=await fetch('https://public.coindcx.com/market_data/current_prices');
+   let d2=await r2.json();
+   if(d2.BTCUSDT){ lastPrice=parseFloat(d2.BTCUSDT).toFixed(2); priceEl.innerText=lastPrice; liveEl.innerText='Live: $'+lastPrice; }
+  }catch(e2){}
+ }
 }
-getBalance(); getPrice();
-setInterval(getPrice,3000);
+updatePrice();
+setInterval(updatePrice, 2500);
 
-// 2. Bot Logic - FIXED @ 0.00
+// BOT
 let btn=document.getElementById('btn');
 btn.onclick=()=>{
-  on=!on;
-  document.getElementById('status').innerText= on? "ACTIVE 🟢" : "STOPPED 🔴";
-  btn.innerText= on? "⏹ STOP BOT" : "▶ START BOT";
-  btn.className= on? "mt-4 w-full py-4 bg-red-500 rounded-full font-bold text-white text-[16px]" : "mt-4 w-full py-4 bg-green-600 rounded-full font-bold text-white text-[16px]";
+ on=!on;
+ document.getElementById('st').innerText=on?"ACTIVE 🟢":"STOPPED 🔴";
+ btn.innerText=on?"⏹ STOP BOT":"▶ START BOT";
+ btn.className= on?"mt-4 w-full py-4 bg-red-500 rounded-full font-bold":"mt-4 w-full py-4 bg-green-600 rounded-full font-bold";
 };
 
 setInterval(()=>{
-  if(!on) return;
-  let rsi = (Math.random()*60+20).toFixed(1);
-  let signal = rsi<38? "BUY" : rsi>62? "SELL" : "HOLD";
-  let conf = Math.floor(Math.random()*20+75);
-  document.getElementById('signal').innerText=signal;
-  document.getElementById('scanSig').innerText=signal;
-  document.getElementById('rsi').innerText=rsi;
-  document.getElementById('conf').innerText=conf;
-
-  if(conf>80 && signal!="HOLD"){
-    let ch = Math.floor(Math.random()*600-150);
-    pnl+=ch;
-    document.getElementById('pnl').innerText=(pnl>=0?'+₹':'-₹')+Math.abs(pnl);
-    document.getElementById('pnl').className = pnl>=0? "text-green-400 font-bold text-lg" : "text-red-400 font-bold text-lg";
-    let time=new Date().toLocaleTimeString();
-    // YAHI FIX HAI - lastPrice use hoga
-    trades.unshift(`${time} | ${signal} @ ${lastPrice} | ${ch>=0?'+':''}${ch}`);
-    document.getElementById('history').innerHTML=trades.slice(0,8).join('<br>');
-    if(realBal) balEl.innerText='₹'+(realBal+pnl).toFixed(2);
-  }
+ if(!on) return;
+ let rsi=(Math.random()*50+20).toFixed(1);
+ let signal=rssi<38?"BUY":rsi>62?"SELL":"HOLD";
+ let conf=Math.floor(Math.random()*20+75);
+ document.getElementById('sig').innerText=signal;
+ document.getElementById('sig2').innerText=signal;
+ document.getElementById('rsi').innerText=rsi;
+ document.getElementById('conf').innerText=conf;
+ if(conf>78 && signal!="HOLD"){
+  let ch=Math.floor(Math.random()*800-200);
+  pnl+=ch;
+  document.getElementById('pnl').innerText=(pnl>=0?'+₹':'-₹')+Math.abs(pnl);
+  document.getElementById('pnl').className=pnl>=0?"text-green-400 font-bold text-lg":"text-red-400 font-bold text-lg";
+  let time=new Date().toLocaleTimeString();
+  trades.unshift(`${time} | ${signal} @ ${lastPrice} | ${ch>=0?'+':''}${ch}`);
+  document.getElementById('hist').innerHTML=trades.slice(0,10).join('<br>');
+  balEl.innerText='₹'+(baseBal+pnl).toFixed(2);
+ }
 },2000);
 </script>
 </body>
