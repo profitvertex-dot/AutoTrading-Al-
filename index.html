@@ -14,7 +14,6 @@
 <h1 class="text-2xl font-black">⚡ COIN<span class="text-violet-400">BOT</span></h1>
 <div id="botStatus" class="px-3 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400">STOP</div>
 </div>
-
 <div class="card rounded-[20px] p-4">
 <p class="text-[10px] text-zinc-500">TOTAL BALANCE (REAL)</p>
 <h2 class="text-4xl font-black mt-1">₹<span id="totalBal">201.38</span></h2>
@@ -23,15 +22,13 @@
 <div class="bg-[#0E0E14] rounded-xl p-3"><p class="text-[9px] text-zinc-500">BTC</p><p id="btcBal">0.00000</p></div>
 </div>
 </div>
-
 <div class="card rounded-[20px] p-3 mt-4">
 <div class="flex justify-between items-center mb-2">
 <p class="text-sm font-bold">BTC/INR Live Candle</p>
-<p id="livePrice" class="text-xs font-black text-violet-400">₹74,62,260</p>
+<p id="livePrice" class="text-xs font-black text-violet-400">₹74,63,437</p>
 </div>
 <div id="candleChart" style="height:280px;width:100%"></div>
 </div>
-
 <div class="card rounded-[20px] p-4 mt-4">
 <div class="flex justify-between items-center">
 <div>
@@ -43,36 +40,31 @@
 <div class="mt-3 bg-black rounded-full h-2"><div id="confBar" class="h-full bg-violet-500" style="width:50%"></div></div>
 <p class="text-right text-[10px] text-zinc-500 mt-1"><span id="confVal">50</span>% Confidence</p>
 </div>
-
 <button id="toggleBtn" class="w-full mt-4 py-4 rounded-2xl font-black bg-violet-600">START BOT 🚀</button>
 <div id="logs" class="card rounded-2xl p-3 mt-4 h-28 overflow-auto text-[10px] font-mono text-zinc-400">Ready...</div>
 </div>
-
 <script>
-let hist=[], candles=[], chart, candleSeries, lastPrice=7462260;
+let hist=[], candles=[], chart, candleSeries, lastPrice=7463437;
 const el=document.getElementById('candleChart');
 chart=LightweightCharts.createChart(el,{layout:{background:{type:'solid',color:'#15151D'},textColor:'#888'},grid:{vertLines:{color:'#1E1E2A'},horzLines:{color:'#1E1E2A'}},width:el.clientWidth,height:280});
 candleSeries=chart.addCandlestickSeries({upColor:'#22c55e',downColor:'#ef4444',wickUpColor:'#22c55e',wickDownColor:'#ef4444',borderVisible:false});
-
-// 20 fake history candle banao taaki chart bhara lage
 let now=Math.floor(Date.now()/1000)-200;
-let base=7462260;
+let base=7462300;
 for(let i=0;i<20;i++){
-  let open=base + (Math.random()-0.5)*400;
-  let close=open + (Math.random()-0.5)*300;
-  let high=Math.max(open,close)+Math.random()*150;
-  let low=Math.min(open,close)-Math.random()*150;
+  let open=base + (Math.random()-0.5)*300;
+  let close=open + (Math.random()-0.5)*200;
+  let high=Math.max(open,close)+Math.random()*100;
+  let low=Math.min(open,close)-Math.random()*100;
   candles.push({time:now+i*10, open, high, low, close});
   hist.push(close);
 }
 candleSeries.setData(candles);
 chart.timeScale().fitContent();
-
 function addCandle(price){
   const t=Math.floor(Date.now()/1000);
   const last=candles[candles.length-1];
   if(t - last.time >= 10){
-    candles.push({time:t, open:last.close, high:price, low:price, close:price});
+    candles.push({time:t, open:price, high:price, low:price, close:price});
     if(candles.length>60) candles.shift();
   } else {
     last.high=Math.max(last.high, price);
@@ -81,15 +73,13 @@ function addCandle(price){
   }
   candleSeries.setData(candles);
 }
-
 async function tick(){
  try{
   try{let b=await(await fetch('/api/balance')).json(); if(b.inr){document.getElementById('inrBal').innerText='₹'+parseFloat(b.inr).toFixed(2); document.getElementById('totalBal').innerText=parseFloat(b.inr).toFixed(2);}}catch(e){}
   let p;
   try{
     let cg=await(await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=inr')).json();
-    p=cg.bitcoin.inr;
-    if(p>20000000) p=p/1000;
+    p=cg.bitcoin.inr; if(p>20000000) p=p/1000;
   }catch(e){ p=lastPrice + (Math.random()-0.5)*80; }
   lastPrice=p;
   document.getElementById('livePrice').innerText='₹'+Math.round(p).toLocaleString('en-IN');
