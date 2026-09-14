@@ -27,20 +27,19 @@ body{background:#07070B;color:#fff}
 </div>
 </div>
 
-<!-- CANDLE CHART -->
 <div class="card rounded-[20px] p-3 mt-4">
 <div class="flex justify-between items-center mb-2">
 <p class="text-sm font-bold">BTC/INR Live Candle</p>
 <p id="livePrice" class="text-xs font-black text-violet-400">Loading...</p>
 </div>
-<div id="candleChart" style="height:200px;width:100%"></div>
+<div id="candleChart" style="height:230px;width:100%"></div>
 </div>
 
 <div class="card rounded-[20px] p-4 mt-4">
 <div class="flex justify-between items-center">
 <div>
 <p id="signalText" class="text-3xl font-black">HOLD</p>
-<p class="text-[11px] text-zinc-500">RSI: <span id="rsiVal" class="text-white font-bold">50.0</span> | <span id="trendText">Neutral</span></p>
+<p class="text-[11px] text-zinc-500">RSI: <span id="rsiVal" class="text-white font-bold">--</span> | <span id="trendText">Loading history...</span></p>
 </div>
 <div id="signalIcon" class="w-12 h-12 rounded-full bg-violet-500/20 flex items-center justify-center text-xl">⚪</div>
 </div>
@@ -49,55 +48,61 @@ body{background:#07070B;color:#fff}
 </div>
 
 <button id="toggleBtn" class="w-full mt-4 py-4 rounded-2xl font-black bg-violet-600">START BOT 🚀</button>
-<div id="logs" class="card rounded-2xl p-3 mt-4 h-24 overflow-auto text-[10px] font-mono text-zinc-400">Ready...</div>
+<div id="logs" class="card rounded-2xl p-3 mt-4 h-28 overflow-auto text-[10px] font-mono text-zinc-400">Loading candles...</div>
 </div>
 
 <script>
-let hist=[], candleSeries, chart;
+let hist=[], candles=[], candleSeries, chart, lastPrice=7462000;
 const chartEl=document.getElementById('candleChart');
-chart=LightweightCharts.createChart(chartEl,{layout:{background:{type:'solid',color:'#15151D'},textColor:'#888'},grid:{vertLines:{color:'#1E1E2A'},horzLines:{color:'#1E1E2A'}},width:chartEl.clientWidth,height:200,timeScale:{timeVisible:true,secondsVisible:true}});
+chart=LightweightCharts.createChart(chartEl,{layout:{background:{type:'solid',color:'#15151D'},textColor:'#888'},grid:{vertLines:{color:'#1E1E2A'},horzLines:{color:'#1E1E2A'}},width:chartEl.clientWidth,height:230,timeScale:{timeVisible:true,secondsVisible:false}});
 candleSeries=chart.addCandlestickSeries({upColor:'#22c55e',downColor:'#ef4444',borderVisible:false,wickUpColor:'#22c55e',wickDownColor:'#ef4444'});
 
-let candles=[], lastPrice=7464553;
-
-function addCandle(price){
-  const now=Math.floor(Date.now()/1000);
-  const last=candles[candles.length-1];
-  // 15 sec = 1 candle
-  if(!last || now - last.time >= 15){
-    const c={time:now, open:price, high:price, low:price, close:price};
-    candles.push(c);
-    if(candles.length>40) candles.shift();
-  } else {
-    last.high=Math.max(last.high, price);
-    last.low=Math.min(last.low, price);
-    last.close=price;
-  }
+// 1. HISTORY LOAD - 50 candles
+async function loadHistory(){
+ try{
+  let res=await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=50');
+  let data=await res.json();
+  candles=data.map(k=>({time:k[0]/1000, open:parseFloat(k[1])*88000, high:parseFloat(k[2])*88000, low:parseFloat(k[3])*88000, close:parseFloat(k[4])*88000}));
   candleSeries.setData(candles);
+  hist=candles.map(c=>c.close);
+  lastPrice=hist[hist.length-1];
+  document.getElementById('logs').innerHTML='History loaded: '+candles.length+' candles<br>'+document.getElementById('logs').innerHTML;
+ }catch(e){
+  document.getElementById('logs').innerHTML='History fail, using live only<br>';
+ }
+}
+loadHistory();
+
+function updateLiveCandle(price){
+ const now=Math.floor(Date.now()/1000);
+ const last=candles[candles.length-1];
+ if(!last || now - last.time >= 60){
+  candles.push({time:now, open:price, high:price, low:price, close:price});
+  if(candles.length>60) candles.shift();
+ } else {
+  last.high=Math.max(last.high, price);
+  last.low=Math.min(last.low, price);
+  last.close=price;
+ }
+ candleSeries.setData(candles);
 }
 
 async function tick(){
  try{
-  try{
-   let b=await(await fetch('/api/balance')).json();
-   if(b.inr){document.getElementById('inrBal').innerText='₹'+parseFloat(b.inr).toFixed(2); document.getElementById('totalBal').innerText=parseFloat(b.inr).toFixed(2);}
-  }catch(e){}
-
+  try{let b=await(await fetch('/api/balance')).json(); if(b.inr){document.getElementById('inrBal').innerText='₹'+parseFloat(b.inr).toFixed(2); document.getElementById('totalBal').innerText=parseFloat(b.inr).toFixed(2);}}catch(e){}
   let p;
   try{
    let cg=await(await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=inr')).json();
    p=cg.bitcoin.inr;
-  }catch(e){ p=lastPrice + (Math.random()-0.5)*500; }
+  }catch(e){ p=lastPrice+(Math.random()-0.5)*200; }
   lastPrice=p;
   document.getElementById('livePrice').innerText='₹'+Math.round(p).toLocaleString('en-IN');
-  addCandle(p);
-
-  hist.push(p); if(hist.length>30) hist.shift();
+  updateLiveCandle(p);
+  hist.push(p); if(hist.length>60) hist.shift();
   let rsi=50; if(hist.length>14){let g=0,l=0; for(let i=1;i<hist.length;i++){let d=hist[i]-hist[i-1]; if(d>0)g+=d; else l-=d;} let rs=g/(l||0.0001); rsi=100-(100/(1+rs));}
   let sig='HOLD',conf=50,ic='⚪',col='#8b5cf6',trend='Neutral';
   if(rsi<38){sig='BUY';conf=85;ic='🟢';col='#22c55e';trend='Oversold ↑';}
-  else if(rsi>65){sig='SELL';conf=80;ic='🔴';col='#ef4444';trend='Overbought ↓';}
-
+  else if(rsi>68){sig='SELL';conf=80;ic='🔴';col='#ef4444';trend='Overbought ↓';}
   document.getElementById('signalText').innerText=sig;
   document.getElementById('signalText').style.color=sig==='HOLD'?'white':col;
   document.getElementById('rsiVal').innerText=rsi.toFixed(1);
@@ -106,15 +111,14 @@ async function tick(){
   document.getElementById('confBar').style.width=conf+'%';
   document.getElementById('confBar').style.background=col;
   document.getElementById('signalIcon').innerText=ic;
-
   if(document.getElementById('botStatus').innerText==='RUNNING'){
     document.getElementById('logs').innerHTML=`[${new Date().toLocaleTimeString()}] ₹${Math.round(p)} RSI:${rsi.toFixed(1)} → ${sig}<br>`+document.getElementById('logs').innerHTML;
   }
  }catch(e){}
 }
-setInterval(tick,2000); tick();
+setInterval(tick,2500);
+setTimeout(tick,1500);
 window.addEventListener('resize',()=>{chart.applyOptions({width:chartEl.clientWidth})});
-
 document.getElementById('toggleBtn').onclick=()=>{
  let s=document.getElementById('botStatus');
  if(s.innerText==='STOP'){s.innerText='RUNNING';s.className='px-3 py-1 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500/30';document.getElementById('toggleBtn').innerText='STOP BOT ⏹️';document.getElementById('toggleBtn').className='w-full mt-4 py-4 rounded-2xl font-black bg-zinc-800';}
