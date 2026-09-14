@@ -1,7 +1,10 @@
-export default async function handler(req,res){
+export default async function handler(req, res){
+  res.setHeader('Access-Control-Allow-Origin', '*');
   try{
-    const r = await fetch('https://public.coindcx.com/market_data/current_prices');
+    const r = await fetch('https://api.coindcx.com/exchange/ticker');
     const data = await r.json();
-    return res.status(200).json(data);
-  }catch(e){ return res.status(200).json({BTCINR:"0"}); }
+    res.json(data);
+  }catch(e){
+    res.status(500).json({error: e.message});
+  }
 }
