@@ -85,7 +85,7 @@ async function tick(){
   document.getElementById('livePrice').innerText='₹'+Math.round(p).toLocaleString('en-IN');
   addCandle(p);
   hist.push(p); if(hist.length>40) hist.shift();
-  let rsi=50; if(hist.length>14){let g=0,l=0; for(let i=1;i<hist.length;i++){let d=hist[i]-hist[i-1]; if(d>0)g+=d; else l-=d;} let rs=g/(l||0.0001); rsi=100-(100/(1+rs));}
+  let rsi=55; if(hist.length>10){let g=0,l=0; for(let i=1;i<hist.length;i++){let d=hist[i]-hist[i-1]; if(d>0)g+=d; else l-=d;} let rs=g/(l||0.0001); rsi=100-(100/(1+rs));}
   let sig=rsi<40?'BUY':rsi>65?'SELL':'HOLD', col=sig==='BUY'?'#22c55e':sig==='SELL'?'#ef4444':'#8b5cf6';
   document.getElementById('signalText').innerText=sig; document.getElementById('signalText').style.color=col;
   document.getElementById('rsiVal').innerText=rsi.toFixed(1);
