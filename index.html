@@ -9,73 +9,88 @@
 <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
 <style>body{background:#07070B;color:#fff}.card{background:#15151D;border:1px solid #232330}</style>
 </head>
-<body class="p-3">
+<body class="p-3 pb-20">
 <div class="max-w-md mx-auto">
 <div class="flex items-center justify-between mb-4">
-<div class="flex items-center gap-3"><img src="logo.png" class="w-11 h-11 rounded-xl"><div><h1 class="font-black">AutoTrading <span class="text-violet-400">AI</span></h1><p class="text-[9px] text-zinc-500">LIVE • REAL PRICE</p></div></div>
-<div id="botStatus" class="px-3 py-1 rounded-full text-xs bg-red-500/20 text-red-400 font-bold">STOP</div>
+<div class="flex items-center gap-3"><img src="logo.png" class="w-11 h-11 rounded-xl"><h1 class="font-black text-[18px]">AutoTrading <span class="text-violet-400">AI</span></h1></div>
+<div id="status" class="px-3 py-1 rounded-full text-xs bg-red-500/20 text-red-400 font-bold">STOP</div>
 </div>
 
-<div class="card rounded-2xl p-4"><p class="text-[10px] text-zinc-500">TOTAL BALANCE</p><h2 class="text-4xl font-black">₹201.38</h2></div>
+<div class="card rounded-[22px] p-4"><p class="text-[10px] text-zinc-500">TOTAL BALANCE</p><h2 class="text-4xl font-black">₹201.38</h2></div>
 
-<div class="card rounded-2xl p-3 mt-4">
-<div class="flex justify-between mb-2"><p class="text-sm font-bold">🟢 BTC/INR Live</p><p id="livePrice" class="text-sm font-bold text-violet-400">Loading...</p></div>
-<div id="chart" style="height:360px"></div>
+<div class="card rounded-[22px] p-3 mt-4">
+<div class="flex justify-between mb-2"><p class="text-sm font-bold">🟢 BTC/INR Live Candles</p><p id="price" class="text-sm font-bold text-violet-400">Loading...</p></div>
+<div id="tv" style="height:400px;width:100%"></div>
 </div>
 
-<div class="card rounded-2xl p-4 mt-4 flex justify-between"><div><p id="sig" class="text-2xl font-black">HOLD</p><p class="text-xs text-zinc-500">RSI <span id="rsi">--</span></p></div><div id="icon" class="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center">⚪</div></div>
-
+<div class="card rounded-2xl p-4 mt-4 flex justify-between"><div><p id="sig" class="text-2xl font-black">HOLD</p><p class="text-xs text-zinc-500">RSI <span id="rsi">--</span></p></div><div class="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center text-xl">⚪</div></div>
 <button id="btn" class="w-full mt-4 py-4 bg-violet-600 rounded-2xl font-black">START BOT 🚀</button>
-<div id="logs" class="card rounded-2xl p-3 mt-3 h-24 overflow-auto text-[10px] font-mono">Ready...</div>
 </div>
 
 <script>
-let hist=[], data=[], chart, series;
-const el=document.getElementById('chart');
-chart=LightweightCharts.createChart(el,{layout:{background:{color:'#15151D'},textColor:'#888'},grid:{vertLines:{color:'#1E1E2A'},horzLines:{color:'#1E1E2A'}},width:el.clientWidth,height:360});
-series=chart.addLineSeries({color:'#8b5cf6',lineWidth:2});
+let candles=[], chart, candleSeries;
+const el=document.getElementById('tv');
+chart=LightweightCharts.createChart(el,{
+  layout:{background:{color:'#15151D'},textColor:'#aaa'},
+  grid:{vertLines:{color:'#1E1E2A'},horzLines:{color:'#1E1E2A'}},
+  width:el.clientWidth,height:400,
+  timeScale:{timeVisible:true,borderColor:'#232330'},
+  rightPriceScale:{borderColor:'#232330'}
+});
+candleSeries=chart.addCandlestickSeries({
+  upColor:'#22c55e', downColor:'#ef4444',
+  borderUpColor:'#22c55e', borderDownColor:'#ef4444',
+  wickUpColor:'#22c55e', wickDownColor:'#ef4444',
+  borderVisible:true, wickVisible:true
+});
 
-async function loadHistory(){
-  try{
-    // CoinGecko history - 1 day, no CORS block
-    let r=await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=inr&days=1');
-    let j=await r.json();
-    data=[]; hist=[];
-    j.prices.slice(-80).forEach(p=>{
-      let t=Math.floor(p[0]/1000);
-      let price=p[1];
-      data.push({time:t,value:price});
-      hist.push(price);
-    });
-    series.setData(data);
-    chart.timeScale().fitContent();
-    document.getElementById('logs').innerHTML+='<br>✅ Chart loaded';
-  }catch(e){document.getElementById('logs').innerHTML+='<br>❌ History fail: '+e;}
+async function loadCandles(){
+  // REAL OHLC - Red Green ke liye
+  let r=await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=inr&days=1');
+  let data=await r.json();
+  candles=data.map(c=>({
+    time: Math.floor(c[0]/1000),
+    open: c[1],
+    high: c[2],
+    low: c[3],
+    close: c[4]
+  }));
+  candleSeries.setData(candles);
+  chart.timeScale().fitContent();
+  document.getElementById('price').innerText='₹'+Math.round(candles[candles.length-1].close).toLocaleString('en-IN');
 }
 
-async function tick(){
+async function liveTick(){
   try{
     let r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=inr');
     let j=await r.json();
     let p=j.bitcoin.inr;
-    document.getElementById('livePrice').innerText='₹'+Math.round(p).toLocaleString('en-IN');
-    let t=Math.floor(Date.now()/1000);
-    data.push({time:t,value:p}); if(data.length>150) data.shift();
-    series.setData(data);
-    hist.push(p); if(hist.length>50) hist.shift();
-    let rsi=50; if(hist.length>14){let g=0,l=0;for(let i=1;i<hist.length;i++){let d=hist[i]-hist[i-1];if(d>0)g+=d;else l-=d;}let rs=g/(l||0.01);rsi=100-(100/(1+rs));}
-    document.getElementById('sig').innerText=rsi<38?'BUY':rsi>68?'SELL':'HOLD';
+    document.getElementById('price').innerText='₹'+Math.round(p).toLocaleString('en-IN');
+    let last=candles[candles.length-1];
+    if(!last) return;
+    // Live candle update - real red/green banega
+    last.close=p;
+    last.high=Math.max(last.high,p);
+    last.low=Math.min(last.low,p);
+    candleSeries.update(last);
+
+    // RSI calc
+    let closes=candles.map(c=>c.close);
+    let g=0,l=0; for(let i=closes.length-14;i<closes.length;i++){let d=closes[i]-closes[i-1]; if(d>0)g+=d; else l-=d;}
+    let rsi=100-(100/(1+g/(l||0.01)));
+    document.getElementById('sig').innerText=rsi<40?'BUY':rsi>65?'SELL':'HOLD';
     document.getElementById('rsi').innerText=rsi.toFixed(1);
   }catch(e){}
 }
 
-loadHistory();
-setInterval(tick,3000);
+loadCandles();
+setInterval(liveTick,3000);
+setInterval(loadCandles,60000); // har 1 min naya candle
 
 document.getElementById('btn').onclick=()=>{
-  let s=document.getElementById('botStatus');
-  if(s.innerText==='STOP'){s.innerText='RUNNING';s.className='px-3 py-1 rounded-full text-xs bg-green-500/20 text-green-400 font-bold';document.getElementById('btn').innerText='STOP BOT';}
-  else{s.innerText='STOP';s.className='px-3 py-1 rounded-full text-xs bg-red-500/20 text-red-400 font-bold';document.getElementById('btn').innerText='START BOT 🚀';}
+  let s=document.getElementById('status');
+  s.innerText=s.innerText==='STOP'?'RUNNING':'STOP';
+  s.className=s.innerText==='RUNNING'?'px-3 py-1 rounded-full text-xs bg-green-500/20 text-green-400 font-bold':'px-3 py-1 rounded-full text-xs bg-red-500/20 text-red-400 font-bold';
 };
 window.addEventListener('resize',()=>chart.applyOptions({width:el.clientWidth}));
 </script>
