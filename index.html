@@ -11,13 +11,12 @@
 </head>
 <body class="p-3 pb-24">
 <div class="max-w-md mx-auto">
-
 <div class="flex items-center justify-between mb-4">
-<div class="flex items-center gap-3"><img src="logo.png" class="w-11 h-11 rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.6)]"><div><h1 class="font-black text-[18px]">AutoTrading <span class="text-violet-400">AI</span></h1><p class="text-[9px] text-zinc-500 tracking-widest font-bold">PRO • LIVE • REAL</p></div></div>
+<div class="flex items-center gap-3"><img src="logo.png" class="w-11 h-11 rounded-xl"><div><h1 class="font-black text-[18px]">AutoTrading <span class="text-violet-400">AI</span></h1><p class="text-[9px] text-zinc-500 tracking-widest font-bold">PRO • LIVE • REAL</p></div></div>
 <div id="status" class="px-3 py-1.5 rounded-full text-[11px] font-black bg-red-500/15 text-red-400 border border-red-500/20">STOP</div>
 </div>
 
-<div class="card rounded-[22px] p-4"><p class="text-[10px] text-zinc-500 font-bold tracking-widest">TOTAL BALANCE</p><h2 class="text-4xl font-black mt-1">₹<span id="bal">201.38</span></h2><p class="text-[11px] text-zinc-500 mt-1">Paper Trading • Real BTC Price</p></div>
+<div class="card rounded-[22px] p-4"><p class="text-[10px] text-zinc-500 font-bold">TOTAL BALANCE</p><h2 class="text-4xl font-black mt-1">₹<span id="bal">201.38</span></h2></div>
 
 <div class="card rounded-[22px] p-3 mt-4">
 <div class="flex justify-between items-center mb-2">
@@ -34,31 +33,26 @@
 
 <div class="grid grid-cols-2 gap-3 mt-4">
 <div class="card rounded-2xl p-4 flex justify-between items-center"><div><p class="text-[10px] text-zinc-500 font-bold">AI SIGNAL</p><p id="sig" class="text-2xl font-black mt-1">HOLD</p><p class="text-[11px] text-zinc-500">RSI <span id="rsi" class="text-white font-bold">--</span></p></div><div id="ic" class="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center text-xl">⚪</div></div>
-<div class="card rounded-2xl p-4"><p class="text-[10px] text-zinc-500 font-bold">TODAY P/L</p><p id="pnl" class="text-xl font-black text-green-400 mt-1">+₹0.00</p><p class="text-[11px] text-zinc-500 mt-1">0 trades</p></div>
+<div class="card rounded-2xl p-4"><p class="text-[10px] text-zinc-500 font-bold">TODAY P/L</p><p id="pnl" class="text-xl font-black text-green-400 mt-1">+₹0.00</p><p class="text-[11px] text-zinc-500">0 trades</p></div>
 </div>
 
-<button id="btn" class="w-full mt-4 py-4 rounded-2xl font-black bg-violet-600 shadow-[0_0_30px_rgba(124,58,237,0.4)]">START BOT 🚀</button>
-<div id="logs" class="card rounded-2xl p-3 mt-3 h-20 overflow-auto text-[10px] font-mono text-zinc-400">🤖 PRO Ready...</div>
+<button id="btn" class="w-full mt-4 py-4 rounded-2xl font-black bg-violet-600">START BOT 🚀</button>
+<div id="logs" class="card rounded-2xl p-3 mt-3 h-20 overflow-auto text-[10px] font-mono text-zinc-400">🤖 PRO Ready - No spam BUY...</div>
 </div>
 
 <script>
-let candles=[], chart, candleSeries, markers=[], currentTF='1';
+let candles=[], chart, candleSeries, markers=[], currentTF='1', lastSignalTime=0;
 const el=document.getElementById('tv');
 chart=LightweightCharts.createChart(el,{
   layout:{background:{color:'#15151D'},textColor:'#999'},
   grid:{vertLines:{color:'#1E1E2A'},horzLines:{color:'#1E1E2A'}},
   width:el.clientWidth,height:430,
-  timeScale:{timeVisible:true,secondsVisible:false,borderColor:'#232330',rightOffset:5},
+  timeScale:{timeVisible:true,borderColor:'#232330',rightOffset:5},
   rightPriceScale:{borderColor:'#232330',scaleMargins:{top:0.15,bottom:0.15}},
-  handleScroll:{mouseWheel:true,pressedMouseMove:true,horzTouchDrag:true,vertTouchDrag:false},
-  handleScale:{mouseWheel:true,pinch:true,axisPressedMouseMove:true}
+  handleScroll:{mouseWheel:true,pressedMouseMove:true,horzTouchDrag:true},
+  handleScale:{mouseWheel:true,pinch:true}
 });
-candleSeries=chart.addCandlestickSeries({
-  upColor:'#22c55e', downColor:'#ef4444',
-  borderUpColor:'#22c55e', borderDownColor:'#ef4444',
-  wickUpColor:'#22c55e', wickDownColor:'#ef4444',
-  borderVisible:true, wickVisible:true
-});
+candleSeries=chart.addCandlestickSeries({upColor:'#22c55e',downColor:'#ef4444',borderUpColor:'#22c55e',borderDownColor:'#ef4444',wickUpColor:'#22c55e',wickDownColor:'#ef4444'});
 
 function setTF(days){
   currentTF=days;
@@ -68,16 +62,13 @@ function setTF(days){
 }
 
 async function load(){
-  try{
-    let r=await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=inr&days=${currentTF}`);
-    let d=await r.json();
-    candles=d.map(c=>({time:Math.floor(c[0]/1000),open:c[1],high:c[2],low:c[3],close:c[4]}));
-    candleSeries.setData(candles);
-    chart.timeScale().fitContent();
-    let last=candles[candles.length-1];
-    document.getElementById('price').innerText='₹'+Math.round(last.close).toLocaleString('en-IN');
-    calcRSI();
-  }catch(e){console.log(e)}
+  let r=await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=inr&days=${currentTF}`);
+  let d=await r.json();
+  candles=d.map(c=>({time:Math.floor(c[0]/1000),open:c[1],high:c[2],low:c[3],close:c[4]}));
+  candleSeries.setData(candles);
+  chart.timeScale().fitContent();
+  document.getElementById('price').innerText='₹'+Math.round(candles[candles.length-1].close).toLocaleString('en-IN');
+  calcRSI();
 }
 
 function calcRSI(){
@@ -90,20 +81,20 @@ function calcRSI(){
   }
   let avgG=gains/14;
   let avgL=losses/14 || 0.00001;
-  let rs=avgG/avgL;
-  let rsi=100-(100/(1+rs));
+  let rsi=100-(100/(1+avgG/avgL));
   document.getElementById('rsi').innerText=rsi.toFixed(1);
-  let sig=rsi<38?'BUY':rsi>68?'SELL':'HOLD';
+  let sig=rsi<35?'BUY':rsi>70?'SELL':'HOLD';
   document.getElementById('sig').innerText=sig;
-  let ic=document.getElementById('ic');
-  ic.innerText=sig=='BUY'?'📈':sig=='SELL'?'📉':'⚪';
-  ic.className=sig=='BUY'?'w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center text-xl border border-green-500/30':sig=='SELL'?'w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center text-xl border border-red-500/30':'w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center text-xl';
-  // Add marker on chart
-  if(sig!='HOLD'){
+  document.getElementById('ic').innerText=sig=='BUY'?'📈':sig=='SELL'?'📉':'⚪';
+
+  let now=Date.now();
+  if(sig!='HOLD' && now-lastSignalTime > 60000){ // 60 sec me 1 hi signal
+    lastSignalTime=now;
     let last=candles[candles.length-1];
     markers.push({time:last.time,position:sig=='BUY'?'belowBar':'aboveBar',color:sig=='BUY'?'#22c55e':'#ef4444',shape:sig=='BUY'?'arrowUp':'arrowDown',text:sig});
-    if(markers.length>20) markers.shift();
+    if(markers.length>10) markers.shift();
     candleSeries.setMarkers(markers);
+    document.getElementById('logs').innerHTML=`🤖 ${sig} @ ₹${Math.round(last.close).toLocaleString('en-IN')}<br>`+document.getElementById('logs').innerHTML;
   }
 }
 
@@ -119,13 +110,10 @@ async function tick(){
   }catch(e){}
 }
 
-load();
-setInterval(tick,3000);
-setInterval(load,60000);
-
+load(); setInterval(tick,3000); setInterval(load,60000);
 document.getElementById('btn').onclick=()=>{
   let s=document.getElementById('status'),b=document.getElementById('btn');
-  if(s.innerText==='STOP'){s.innerText='RUNNING';s.className='px-3 py-1.5 rounded-full text-[11px] font-black bg-green-500/15 text-green-400 border border-green-500/20';b.innerText='STOP BOT ⏹️';b.className='w-full mt-4 py-4 rounded-2xl font-black bg-red-500';document.getElementById('logs').innerHTML+='<br>🚀 Bot RUNNING';}
+  if(s.innerText==='STOP'){s.innerText='RUNNING';s.className='px-3 py-1.5 rounded-full text-[11px] font-black bg-green-500/15 text-green-400 border border-green-500/20';b.innerText='STOP BOT ⏹️';b.className='w-full mt-4 py-4 rounded-2xl font-black bg-red-500';}
   else{s.innerText='STOP';s.className='px-3 py-1.5 rounded-full text-[11px] font-black bg-red-500/15 text-red-400 border border-red-500/20';b.innerText='START BOT 🚀';b.className='w-full mt-4 py-4 rounded-2xl font-black bg-violet-600';}
 };
 window.addEventListener('resize',()=>chart.applyOptions({width:el.clientWidth}));
