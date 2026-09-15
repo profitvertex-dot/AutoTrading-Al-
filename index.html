@@ -2,120 +2,78 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>AutoTrading AI - PRO</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AutoTrading AI - REAL + DEMO</title>
 <link rel="icon" href="logo.png">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
-<style>body{background:#07070B;color:#fff;font-family:Inter,sans-serif}.card{background:#15151D;border:1px solid #232330}.tf-active{background:#8b5cf6!important;color:white!important;}</style>
+<style>body{background:#07070B;color:#fff}.card{background:#15151D;border:1px solid #232330}.active-acc{background:#8b5cf6!important;color:white!important;border-color:#8b5cf6!important}</style>
 </head>
 <body class="p-3 pb-24">
 <div class="max-w-md mx-auto">
+<div class="flex gap-2 mb-4">
+<button id="demoBtn" onclick="setAccount('demo')" class="active-acc flex-1 py-2.5 rounded-xl font-black text-[12px] border bg-[#1E1E2A]">🧪 DEMO ACCOUNT</button>
+<button id="realBtn" onclick="setAccount('real')" class="flex-1 py-2.5 rounded-xl font-black text-[12px] border bg-[#1E1E2A] text-zinc-400">💰 REAL ACCOUNT</button>
+</div>
 <div class="flex items-center justify-between mb-4">
-<div class="flex items-center gap-3"><img src="logo.png" class="w-11 h-11 rounded-xl"><div><h1 class="font-black text-[18px]">AutoTrading <span class="text-violet-400">AI</span></h1><p class="text-[9px] text-zinc-500 tracking-widest font-bold">PRO • LIVE • REAL</p></div></div>
+<div class="flex items-center gap-3"><img src="logo.png" class="w-11 h-11 rounded-xl"><div><h1 class="font-black text-[16px]">AutoTrading <span class="text-violet-400">AI</span></h1><p id="accLabel" class="text-[9px] text-green-400 font-bold">● DEMO MODE</p></div></div>
 <div id="status" class="px-3 py-1.5 rounded-full text-[11px] font-black bg-red-500/15 text-red-400 border border-red-500/20">STOP</div>
 </div>
-
-<div class="card rounded-[22px] p-4"><p class="text-[10px] text-zinc-500 font-bold">TOTAL BALANCE</p><h2 class="text-4xl font-black mt-1">₹<span id="bal">201.38</span></h2></div>
-
+<div class="card rounded-[22px] p-4"><p class="text-[10px] text-zinc-500 font-bold tracking-widest">TOTAL BALANCE</p><h2 class="text-4xl font-black mt-1">₹<span id="bal">10000.00</span></h2><p id="balSub" class="text-[11px] text-zinc-500 mt-1">Demo Balance</p></div>
 <div class="card rounded-[22px] p-3 mt-4">
 <div class="flex justify-between items-center mb-2">
-<div class="flex gap-1.5">
-<button onclick="setTF('1')" id="tf1" class="tf-active px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A]">1D</button>
-<button onclick="setTF('7')" id="tf7" class="px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A] text-zinc-400">7D</button>
-<button onclick="setTF('14')" id="tf14" class="px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A] text-zinc-400">14D</button>
-</div>
+<div class="flex gap-1.5"><button onclick="setTF('1')" id="tf1" class="active-acc px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A]">1D</button><button onclick="setTF('7')" id="tf7" class="px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A] text-zinc-400">7D</button><button onclick="setTF('14')" id="tf14" class="px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A] text-zinc-400">14D</button></div>
 <p id="price" class="text-[13px] font-black text-violet-400 bg-violet-500/10 px-3 py-1 rounded-full">Loading...</p>
 </div>
-<div id="tv" style="height:430px;width:100%"></div>
-<p class="text-[9px] text-zinc-600 text-center mt-1">Pinch to Zoom • Drag to Scroll • Real CoinGecko</p>
+<div id="tv" style="height:400px;width:100%"></div>
+<p class="text-[9px] text-zinc-600 text-center mt-1">Pinch to Zoom • Drag to Scroll</p>
 </div>
-
 <div class="grid grid-cols-2 gap-3 mt-4">
-<div class="card rounded-2xl p-4 flex justify-between items-center"><div><p class="text-[10px] text-zinc-500 font-bold">AI SIGNAL</p><p id="sig" class="text-2xl font-black mt-1">HOLD</p><p class="text-[11px] text-zinc-500">RSI <span id="rsi" class="text-white font-bold">--</span></p></div><div id="ic" class="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center text-xl">⚪</div></div>
-<div class="card rounded-2xl p-4"><p class="text-[10px] text-zinc-500 font-bold">TODAY P/L</p><p id="pnl" class="text-xl font-black text-green-400 mt-1">+₹0.00</p><p class="text-[11px] text-zinc-500">0 trades</p></div>
+<div class="card rounded-2xl p-4"><p class="text-[10px] text-zinc-500 font-bold">AI SIGNAL</p><p id="sig" class="text-2xl font-black mt-1">HOLD</p><p class="text-[11px] text-zinc-500">RSI <span id="rsi" class="text-white font-bold">--</span></p></div>
+<div class="card rounded-2xl p-4"><p class="text-[10px] text-zinc-500 font-bold">TODAY P/L</p><p id="pnl" class="text-xl font-black text-green-400 mt-1">+₹0.00</p><p class="text-[11px] text-zinc-500"><span id="trades">0 trades</span> • <span id="accType">DEMO</span></p></div>
 </div>
-
-<button id="btn" class="w-full mt-4 py-4 rounded-2xl font-black bg-violet-600">START BOT 🚀</button>
-<div id="logs" class="card rounded-2xl p-3 mt-3 h-20 overflow-auto text-[10px] font-mono text-zinc-400">🤖 PRO Ready - No spam BUY...</div>
+<div class="grid grid-cols-2 gap-3 mt-3">
+<button onclick="manualTrade('BUY')" class="py-3.5 bg-green-600 rounded-2xl font-black text-sm">BUY 🚀</button>
+<button onclick="manualTrade('SELL')" class="py-3.5 bg-red-600 rounded-2xl font-black text-sm">SELL 🔻</button>
 </div>
-
+<button id="btn" class="w-full mt-3 py-4 rounded-2xl font-black bg-violet-600">START BOT 🚀</button>
+<div id="logs" class="card rounded-2xl p-3 mt-3 h-24 overflow-auto text-[10px] font-mono text-zinc-400">🤖 Ready...</div>
+</div>
 <script>
-let candles=[], chart, candleSeries, markers=[], currentTF='1', lastSignalTime=0;
+let accountMode = localStorage.getItem('accMode') || 'demo';
+let balances = JSON.parse(localStorage.getItem('balances') || '{"demo":10000,"real":200}');
+let tradesCount = JSON.parse(localStorage.getItem('tradesCount') || '{"demo":0,"real":0}');
+let pnl = JSON.parse(localStorage.getItem('pnl') || '{"demo":0,"real":0}');
+let candles=[], chart, candleSeries, markers=[], currentTF='1', lastSignalTime=0, position=null;
 const el=document.getElementById('tv');
-chart=LightweightCharts.createChart(el,{
-  layout:{background:{color:'#15151D'},textColor:'#999'},
-  grid:{vertLines:{color:'#1E1E2A'},horzLines:{color:'#1E1E2A'}},
-  width:el.clientWidth,height:430,
-  timeScale:{timeVisible:true,borderColor:'#232330',rightOffset:5},
-  rightPriceScale:{borderColor:'#232330',scaleMargins:{top:0.15,bottom:0.15}},
-  handleScroll:{mouseWheel:true,pressedMouseMove:true,horzTouchDrag:true},
-  handleScale:{mouseWheel:true,pinch:true}
-});
+chart=LightweightCharts.createChart(el,{layout:{background:{color:'#15151D'},textColor:'#999'},grid:{vertLines:{color:'#1E1E2A'},horzLines:{color:'#1E1E2A'}},width:el.clientWidth,height:400,timeScale:{timeVisible:true,borderColor:'#232330'},rightPriceScale:{borderColor:'#232330'}});
 candleSeries=chart.addCandlestickSeries({upColor:'#22c55e',downColor:'#ef4444',borderUpColor:'#22c55e',borderDownColor:'#ef4444',wickUpColor:'#22c55e',wickDownColor:'#ef4444'});
-
-function setTF(days){
-  currentTF=days;
-  document.querySelectorAll('[id^=tf]').forEach(b=>b.className='px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A] text-zinc-400');
-  document.getElementById('tf'+days).className='tf-active px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A]';
-  load();
+function setAccount(mode){
+  accountMode=mode;
+  localStorage.setItem('accMode',mode);
+  document.getElementById('demoBtn').className=mode=='demo'?'active-acc flex-1 py-2.5 rounded-xl font-black text-[12px] border bg-[#1E1E2A]':'flex-1 py-2.5 rounded-xl font-black text-[12px] border bg-[#1E1E2A] text-zinc-400';
+  document.getElementById('realBtn').className=mode=='real'?'active-acc flex-1 py-2.5 rounded-xl font-black text-[12px] border bg-[#1E1E2A]':'flex-1 py-2.5 rounded-xl font-black text-[12px] border bg-[#1E1E2A] text-zinc-400';
+  document.getElementById('accLabel').innerText=mode=='demo'?'● DEMO MODE - ₹10000':'● REAL MODE - ₹200';
+  document.getElementById('accLabel').className=mode=='demo'?'text-[9px] text-green-400 font-bold':'text-[9px] text-orange-400 font-bold';
+  document.getElementById('bal').innerText=balances[mode].toFixed(2);
+  document.getElementById('balSub').innerText=mode=='demo'?'Demo Balance • ₹10000':'Real Balance • ₹200';
+  document.getElementById('accType').innerText=mode.toUpperCase();
+  document.getElementById('trades').innerText=tradesCount[mode]+' trades';
+  document.getElementById('pnl').innerText=(pnl[mode]>=0?'+₹':'-₹')+Math.abs(pnl[mode]).toFixed(2);
+  document.getElementById('logs').innerHTML=`🤖 Switched to ${mode.toUpperCase()}<br>`+document.getElementById('logs').innerHTML;
 }
-
-async function load(){
-  let r=await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=inr&days=${currentTF}`);
-  let d=await r.json();
-  candles=d.map(c=>({time:Math.floor(c[0]/1000),open:c[1],high:c[2],low:c[3],close:c[4]}));
-  candleSeries.setData(candles);
-  chart.timeScale().fitContent();
-  document.getElementById('price').innerText='₹'+Math.round(candles[candles.length-1].close).toLocaleString('en-IN');
-  calcRSI();
+function manualTrade(type){
+  let price = candles[candles.length-1]?.close || 7376532;
+  if(type=='BUY' &&!position){position={price:price}; document.getElementById('logs').innerHTML=`🟢 ${accountMode.toUpperCase()} BUY @ ₹${Math.round(price).toLocaleString()}<br>`+document.getElementById('logs').innerHTML;}
+  else if(type=='SELL' && position){let profit=(price-position.price)/position.price*100; let profitAmt=balances[accountMode]*0.1*profit/100; pnl[accountMode]+=profitAmt; balances[accountMode]+=profitAmt; tradesCount[accountMode]++; position=null; saveAndUpdate(); document.getElementById('logs').innerHTML=`🔴 ${accountMode.toUpperCase()} SELL @ ₹${Math.round(price).toLocaleString()} P/L ₹${profitAmt.toFixed(2)}<br>`+document.getElementById('logs').innerHTML;}
 }
-
-function calcRSI(){
-  if(candles.length<15) return;
-  let cl=candles.map(c=>c.close);
-  let gains=0,losses=0;
-  for(let i=cl.length-14;i<cl.length;i++){
-    let diff=cl[i]-cl[i-1];
-    if(diff>=0) gains+=diff; else losses-=diff;
-  }
-  let avgG=gains/14;
-  let avgL=losses/14 || 0.00001;
-  let rsi=100-(100/(1+avgG/avgL));
-  document.getElementById('rsi').innerText=rsi.toFixed(1);
-  let sig=rsi<35?'BUY':rsi>70?'SELL':'HOLD';
-  document.getElementById('sig').innerText=sig;
-  document.getElementById('ic').innerText=sig=='BUY'?'📈':sig=='SELL'?'📉':'⚪';
-
-  let now=Date.now();
-  if(sig!='HOLD' && now-lastSignalTime > 60000){ // 60 sec me 1 hi signal
-    lastSignalTime=now;
-    let last=candles[candles.length-1];
-    markers.push({time:last.time,position:sig=='BUY'?'belowBar':'aboveBar',color:sig=='BUY'?'#22c55e':'#ef4444',shape:sig=='BUY'?'arrowUp':'arrowDown',text:sig});
-    if(markers.length>10) markers.shift();
-    candleSeries.setMarkers(markers);
-    document.getElementById('logs').innerHTML=`🤖 ${sig} @ ₹${Math.round(last.close).toLocaleString('en-IN')}<br>`+document.getElementById('logs').innerHTML;
-  }
-}
-
-async function tick(){
-  try{
-    let r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=inr');
-    let j=await r.json(); let p=j.bitcoin.inr;
-    document.getElementById('price').innerText='₹'+Math.round(p).toLocaleString('en-IN');
-    let last=candles[candles.length-1]; if(!last) return;
-    last.close=p; last.high=Math.max(last.high,p); last.low=Math.min(last.low,p);
-    candleSeries.update(last);
-    calcRSI();
-  }catch(e){}
-}
-
-load(); setInterval(tick,3000); setInterval(load,60000);
-document.getElementById('btn').onclick=()=>{
-  let s=document.getElementById('status'),b=document.getElementById('btn');
-  if(s.innerText==='STOP'){s.innerText='RUNNING';s.className='px-3 py-1.5 rounded-full text-[11px] font-black bg-green-500/15 text-green-400 border border-green-500/20';b.innerText='STOP BOT ⏹️';b.className='w-full mt-4 py-4 rounded-2xl font-black bg-red-500';}
-  else{s.innerText='STOP';s.className='px-3 py-1.5 rounded-full text-[11px] font-black bg-red-500/15 text-red-400 border border-red-500/20';b.innerText='START BOT 🚀';b.className='w-full mt-4 py-4 rounded-2xl font-black bg-violet-600';}
-};
+function saveAndUpdate(){localStorage.setItem('balances',JSON.stringify(balances));localStorage.setItem('pnl',JSON.stringify(pnl));localStorage.setItem('tradesCount',JSON.stringify(tradesCount));setAccount(accountMode);}
+function setTF(days){currentTF=days; document.querySelectorAll('[id^=tf]').forEach(b=>b.className='px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A] text-zinc-400'); document.getElementById('tf'+days).className='active-acc px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A]'; load();}
+async function load(){let r=await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=inr&days=${currentTF}`);let d=await r.json();candles=d.map(c=>({time:Math.floor(c[0]/1000),open:c[1],high:c[2],low:c[3],close:c[4]}));candleSeries.setData(candles);chart.timeScale().fitContent();document.getElementById('price').innerText='₹'+Math.round(candles[candles.length-1].close).toLocaleString('en-IN');calcRSI();}
+function calcRSI(){if(candles.length<15)return;let cl=candles.map(c=>c.close);let g=0,l=0;for(let i=cl.length-14;i<cl.length;i++){let diff=cl[i]-cl[i-1];if(diff>=0)g+=diff;else l-=diff;}let rsi=100-(100/(1+(g/14)/((l/14)||0.00001)));document.getElementById('rsi').innerText=rsi.toFixed(1);let sig=rsi<35?'BUY':rsi>70?'SELL':'HOLD';document.getElementById('sig').innerText=sig;let now=Date.now();if(sig!='HOLD'&&now-lastSignalTime>60000){lastSignalTime=now;let last=candles[candles.length-1];markers.push({time:last.time,position:sig=='BUY'?'belowBar':'aboveBar',color:sig=='BUY'?'#22c55e':'#ef4444',shape:sig=='BUY'?'arrowUp':'arrowDown',text:sig});if(markers.length>10)markers.shift();candleSeries.setMarkers(markers);}}
+async function tick(){try{let r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=inr');let j=await r.json();let p=j.bitcoin.inr;document.getElementById('price').innerText='₹'+Math.round(p).toLocaleString('en-IN');let last=candles[candles.length-1];if(!last)return;last.close=p;last.high=Math.max(last.high,p);last.low=Math.min(last.low,p);candleSeries.update(last);calcRSI();}catch(e){}}
+setAccount(accountMode);load();setInterval(tick,3000);setInterval(load,60000);
+document.getElementById('btn').onclick=()=>{let s=document.getElementById('status'),b=document.getElementById('btn');if(s.innerText==='STOP'){s.innerText='RUNNING';b.innerText='STOP BOT ⏹️';b.className='w-full mt-3 py-4 rounded-2xl font-black bg-red-500';}else{s.innerText='STOP';b.innerText='START BOT 🚀';b.className='w-full mt-3 py-4 rounded-2xl font-black bg-violet-600';}};
 window.addEventListener('resize',()=>chart.applyOptions({width:el.clientWidth}));
 </script>
 </body>
