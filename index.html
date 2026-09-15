@@ -31,11 +31,11 @@
 </div>
 <div class="grid grid-cols-2 gap-3 mt-4">
 <div class="card rounded-2xl p-4"><p class="text-[10px] text-zinc-500 font-bold">AI SIGNAL</p><p id="sig" class="text-2xl font-black mt-1">HOLD</p><p class="text-[11px] text-zinc-500">RSI <span id="rsi" class="text-white font-bold">--</span></p></div>
-<div class="card rounded-2xl p-4"><p class="text-[10px] text-zinc-500 font-bold">TODAY P/L</p><p id="pnl" class="text-xl font-black text-green-400 mt-1">+₹0.00</p><p class="text-[11px] text-zinc-500"><span id="trades">0 trades</span> • <span id="modeTag">DEMO</span> • CoinDCX LIVE</p></div>
+<div class="card rounded-2xl p-4"><p class="text-[10px] text-zinc-500 font-bold">TODAY P/L</p><p id="pnl" class="text-xl font-black text-green-400 mt-1">+₹0.00</p><p class="text-[11px] text-zinc-500"><span id="trades">0 trades</span> • <span id="modeTag">DEMO</span> • LIVE</p></div>
 </div>
 <div class="grid grid-cols-2 gap-3 mt-3"><button onclick="manualTrade('BUY')" class="py-3.5 bg-green-600 rounded-2xl font-black text-sm">BUY 🚀</button><button onclick="manualTrade('SELL')" class="py-3.5 bg-red-600 rounded-2xl font-black text-sm">SELL 🔻</button></div>
 <button id="btn" class="w-full mt-3 py-4 rounded-2xl font-black bg-violet-600">START BOT 🚀</button>
-<div id="logs" class="card rounded-2xl p-3 mt-3 h-32 overflow-auto text-[10px] font-mono text-zinc-400">🤖 CoinDCX LIVE Chart Connected<br></div>
+<div id="logs" class="card rounded-2xl p-3 mt-3 h-32 overflow-auto text-[10px] font-mono text-zinc-400">🤖 Ready - CoinDCX LIVE<br></div>
 </div>
 <script>
 let accountMode=localStorage.getItem('accMode')||'demo';
@@ -59,56 +59,54 @@ function setAccount(mode){
   document.getElementById('pnl').innerText=(pnl[mode]>=0?'+':'')+'₹'+pnl[mode].toFixed(2);
 }
 async function connectReal(){
-  document.getElementById('logs').innerHTML=`⏳ CoinDCX se real balance le raha hu...<br>`+document.getElementById('logs').innerHTML;
+  document.getElementById('logs').innerHTML=`⏳ CoinDCX Balance...<br>`+document.getElementById('logs').innerHTML;
   document.getElementById('connectBtn').innerText='Loading...';
   try{
     let r=await fetch('/api/balance'); let j=await r.json();
-    if(j.success||j.balance){ balances.real=j.balance||200; localStorage.setItem('balances',JSON.stringify(balances)); setAccount('real'); document.getElementById('connectBtn').innerText='✅ Connected'; document.getElementById('logs').innerHTML=`✅ REAL Balance: ₹${j.balance}<br>`+document.getElementById('logs').innerHTML; }
-    else{ document.getElementById('connectBtn').innerText='Connect 🔑'; alert('Error: '+JSON.stringify(j)); }
-  }catch(e){ document.getElementById('connectBtn').innerText='Connect 🔑'; alert('API file nahi mila'); }
+    if(j.success||j.balance!=undefined){ balances.real=j.balance||200; localStorage.setItem('balances',JSON.stringify(balances)); setAccount('real'); document.getElementById('connectBtn').innerText='✅ Connected'; document.getElementById('logs').innerHTML=`✅ REAL: ₹${j.balance}<br>`+document.getElementById('logs').innerHTML; }
+    else{ document.getElementById('connectBtn').innerText='Connect 🔑'; document.getElementById('logs').innerHTML=`❌ ${JSON.stringify(j).slice(0,100)}<br>`+document.getElementById('logs').innerHTML; }
+  }catch(e){ document.getElementById('connectBtn').innerText='Connect 🔑'; }
 }
 function manualTrade(type){
   let price=candles[candles.length-1]?.close||7358807;
-  if(type=='BUY'&&!position){position={price};document.getElementById('logs').innerHTML=`🟢 ${accountMode.toUpperCase()} BUY @ ₹${Math.round(price).toLocaleString()}<br>`+document.getElementById('logs').innerHTML;if(accountMode=='real'&&document.getElementById('status').innerText=='RUNNING'){placeRealOrder('buy',price);}}
-  else if(type=='SELL'&&position){let profit=(price-position.price)/position.price*100;let profitAmt=balances[accountMode]*0.1*profit/100;pnl[accountMode]+=profitAmt;balances[accountMode]+=profitAmt;tradesCount[accountMode]++;position=null;localStorage.setItem('balances',JSON.stringify(balances));localStorage.setItem('pnl',JSON.stringify(pnl));localStorage.setItem('tradesCount',JSON.stringify(tradesCount));setAccount(accountMode);document.getElementById('logs').innerHTML=`🔴 ${accountMode.toUpperCase()} SELL ${profit.toFixed(2)}%<br>`+document.getElementById('logs').innerHTML;if(accountMode=='real'&&document.getElementById('status').innerText=='RUNNING'){placeRealOrder('sell',price);}}
+  if(type=='BUY'&&!position){position={price};document.getElementById('logs').innerHTML=`🟢 ${accountMode} BUY @ ₹${Math.round(price).toLocaleString()}<br>`+document.getElementById('logs').innerHTML;if(accountMode=='real'&&document.getElementById('status').innerText=='RUNNING')placeRealOrder('buy',price);}
+  else if(type=='SELL'&&position){let profit=(price-position.price)/position.price*100;let profitAmt=balances[accountMode]*0.1*profit/100;pnl[accountMode]+=profitAmt;balances[accountMode]+=profitAmt;tradesCount[accountMode]++;position=null;localStorage.setItem('balances',JSON.stringify(balances));localStorage.setItem('pnl',JSON.stringify(pnl));localStorage.setItem('tradesCount',JSON.stringify(tradesCount));setAccount(accountMode);document.getElementById('logs').innerHTML=`🔴 ${accountMode} SELL ${profit.toFixed(2)}%<br>`+document.getElementById('logs').innerHTML;if(accountMode=='real'&&document.getElementById('status').innerText=='RUNNING')placeRealOrder('sell',price);}
 }
 async function placeRealOrder(side, price){
   try{
     let qty = (180 / price); if(qty < 0.00001) qty = 0.00001;
-    document.getElementById('logs').innerHTML=`🚀 REAL ${side.toUpperCase()} CoinDCX Order...<br>`+document.getElementById('logs').innerHTML;
+    document.getElementById('logs').innerHTML=`🚀 REAL ${side.toUpperCase()} Order...<br>`+document.getElementById('logs').innerHTML;
     let ro = await fetch('/api/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({side:side, amount:qty})});
     let rj = await ro.json();
-    document.getElementById('logs').innerHTML=`✅ CoinDCX: ${JSON.stringify(rj).slice(0,150)}<br>`+document.getElementById('logs').innerHTML;
+    document.getElementById('logs').innerHTML=`✅ Order: ${JSON.stringify(rj).slice(0,150)}<br>`+document.getElementById('logs').innerHTML;
     setTimeout(connectReal, 3000);
-  }catch(e){document.getElementById('logs').innerHTML=`❌ Order fail: ${e.message}<br>`+document.getElementById('logs').innerHTML;}
+  }catch(e){document.getElementById('logs').innerHTML=`❌ Fail: ${e.message}<br>`+document.getElementById('logs').innerHTML;}
 }
 function setTF(days){currentTF=days;document.querySelectorAll('[id^=tf]').forEach(b=>b.className='px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A] text-zinc-400');document.getElementById('tf'+days).className='active-acc px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A]';load();}
 
-// *** COINDCX LIVE CHART - 100% ***
 async function load(){
   try{
     let interval = currentTF=='1'?'1m':'15m';
-    let r = await fetch(`https://public.coindcx.com/market_data/candles?pair=I-BTC_INR&interval=${interval}&limit=200`);
+    let r = await fetch(`/api/candles?interval=${interval}`);
     let d = await r.json();
+    if(d.error) throw d.error;
     if(!Array.isArray(d) || d.length==0) throw 'no data';
     d = d.reverse();
     candles = d.map(c=>({time: Math.floor(c.time/1000), open: parseFloat(c.open), high: parseFloat(c.high), low: parseFloat(c.low), close: parseFloat(c.close)}));
     candleSeries.setData(candles);
     chart.timeScale().fitContent();
     document.getElementById('price').innerText='₹'+Math.round(candles[candles.length-1].close).toLocaleString('en-IN');
-    document.getElementById('logs').innerHTML=`📊 CoinDCX Candle Loaded: ${candles.length} LIVE<br>`+document.getElementById('logs').innerHTML;
+    document.getElementById('logs').innerHTML=`📊 CoinDCX LIVE ${candles.length} candles<br>`+document.getElementById('logs').innerHTML;
     calcRSI();
   }catch(e){
-    document.getElementById('logs').innerHTML=`⚠️ CoinDCX fail, CoinGecko fallback<br>`+document.getElementById('logs').innerHTML;
-    let r2=await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=inr&days=${currentTF}`);
-    let d2=await r2.json();candles=d2.map(c=>({time:Math.floor(c[0]/1000),open:c[1],high:c[2],low:c[3],close:c[4]}));candleSeries.setData(candles);chart.timeScale().fitContent();
+    document.getElementById('logs').innerHTML=`❌ Candle Error: ${e}<br>`+document.getElementById('logs').innerHTML;
   }
 }
 async function tick(){
   try{
-    let r = await fetch('https://api.coindcx.com/exchange/ticker');
+    let r = await fetch('/api/ticker');
     let j = await r.json();
-    let btc = j.find(x=>x.market=='BTCINR');
+    let btc = Array.isArray(j)? j.find(x=>x.market=='BTCINR') : null;
     if(!btc) return;
     let p = parseFloat(btc.last_price);
     document.getElementById('price').innerText='₹'+Math.round(p).toLocaleString('en-IN');
@@ -132,7 +130,7 @@ async function calcRSI(){
     let last=candles[candles.length-1];
     markers.push({time:last.time,position:sig=='BUY'?'belowBar':'aboveBar',color:sig=='BUY'?'#22c55e':'#ef4444',shape:sig=='BUY'?'arrowUp':'arrowDown',text:sig});
     if(markers.length>10)markers.shift();candleSeries.setMarkers(markers);
-    document.getElementById('logs').innerHTML=`🤖 CoinDCX Signal: ${sig} RSI ${rsi.toFixed(1)}<br>`+document.getElementById('logs').innerHTML;
+    document.getElementById('logs').innerHTML=`🤖 Signal: ${sig} RSI ${rsi.toFixed(1)}<br>`+document.getElementById('logs').innerHTML;
     let status=document.getElementById('status').innerText;
     if(accountMode=='real' && status=='RUNNING'){ await placeRealOrder(sig.toLowerCase(), last.close); }
     else if(accountMode=='demo' && status=='RUNNING'){ manualTrade(sig); }
@@ -141,7 +139,7 @@ async function calcRSI(){
 setAccount(accountMode);load();setInterval(tick,3000);setInterval(load,60000);
 document.getElementById('btn').onclick=()=>{
   let s=document.getElementById('status'),b=document.getElementById('btn');
-  if(s.innerText==='STOP'){s.innerText='RUNNING';s.className='px-3 py-1.5 rounded-full text-[11px] font-black bg-green-500/15 text-green-400 border border-green-500/20';b.innerText='STOP BOT ⏹️';b.className='w-full mt-3 py-4 rounded-2xl font-black bg-red-500';document.getElementById('logs').innerHTML=`▶️ BOT STARTED ${accountMode.toUpperCase()} - CoinDCX LIVE<br>`+document.getElementById('logs').innerHTML;}
+  if(s.innerText==='STOP'){s.innerText='RUNNING';s.className='px-3 py-1.5 rounded-full text-[11px] font-black bg-green-500/15 text-green-400 border border-green-500/20';b.innerText='STOP BOT ⏹️';b.className='w-full mt-3 py-4 rounded-2xl font-black bg-red-500';document.getElementById('logs').innerHTML=`▶️ BOT STARTED ${accountMode.toUpperCase()}<br>`+document.getElementById('logs').innerHTML;}
   else{s.innerText='STOP';s.className='px-3 py-1.5 rounded-full text-[11px] font-black bg-red-500/15 text-red-400 border border-red-500/20';b.innerText='START BOT 🚀';b.className='w-full mt-3 py-4 rounded-2xl font-black bg-violet-600';document.getElementById('logs').innerHTML=`⏹️ BOT STOPPED<br>`+document.getElementById('logs').innerHTML;}
 };
 </script>
