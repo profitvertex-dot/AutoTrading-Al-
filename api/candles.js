@@ -1,7 +1,14 @@
-export default async function handler(req,res){
-  res.setHeader('Access-Control-Allow-Origin','*');
+// api/candles.js - CoinDCX ko server side se laayega, CORS bypass
+export default async function handler(req, res){
   try{
-    let r=await fetch('https://public.coindcx.com/market_data/candles?pair=B-BTC_INR&interval=1m&limit=100');
-    let d=await r.json(); res.status(200).json(d);
-  }catch(e){res.status(500).json([]);}
+    // I-BTC_INR = Spot BTC/INR
+    let interval = req.query.interval || '1m';
+    let url = `https://public.coindcx.com/market_data/candles?pair=I-BTC_INR&interval=${interval}&limit=200`;
+    let r = await fetch(url);
+    let j = await r.json();
+    res.setHeader('Access-Control-Allow-Origin','*');
+    return res.json(j);
+  }catch(e){
+    return res.json({error: e.message});
+  }
 }
