@@ -11,7 +11,7 @@ export default async function handler(req,res){
       market: 'SHIBINR',
       side: side,
       order_type: 'market_order',
-      total_quantity: "150000"
+      total_quantity: "400000" // 4 lakh = ~₹196 > 100 min aur tere 482 me ho jayega
     };
     const json=JSON.stringify(bodyObj);
     const sig=crypto.createHmac('sha256',API_SECRET).update(json).digest('hex');
