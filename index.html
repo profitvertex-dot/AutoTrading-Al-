@@ -3,115 +3,96 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial"></script>
 <style>
-body{background:#000;color:#fff;font-family:Arial;padding:12px;margin:0}
-.card{background:#151515;padding:15px;border-radius:12px;margin-bottom:12px;border:1px solid #222}
-button{padding:12px 18px;border-radius:8px;border:none;font-weight:bold;margin:4px;cursor:pointer}
-.buy{background:#00ff88;color:#000}
-.sell{background:#ff3b3b;color:#fff}
-.live{background:#00ff88;color:#000}
-.demo{background:orange;color:#000}
-#logs{font-size:11px;max-height:180px;overflow:auto;background:#000}
+body{background:#0a0a0a;color:#fff;font-family:Arial;margin:0;padding:10px}
+.top{display:flex;gap:10px;margin-bottom:12px}
+.top button{flex:1;padding:14px;border-radius:14px;border:1px solid #333;font-weight:bold}
+.demo{background:#1a1a1a;color:#aaa}
+.real{background:#8b5cf6;color:#fff}
+.card{background:#161616;border-radius:18px;padding:16px;margin-bottom:12px;border:1px solid #222}
+.bal{font-size:38px;font-weight:800;margin:5px 0}
+.ai{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.ai-icon{background:#8b5cf6;width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:20px}
+.stop{margin-left:auto;border:1px solid #ff3b3b;color:#ff3b3b;background:#000;padding:8px 18px;border-radius:20px}
+.refresh{background:#8b5cf6;padding:12px 16px;border-radius:14px;float:right}
+.bottom{display:flex;gap:10px;position:fixed;bottom:10px;left:10px;right:10px}
+.bottom button{flex:1;padding:14px;border-radius:14px;border:none;font-weight:bold}
+.home{background:#8b5cf6;color:#fff}
+.history{background:#222;color:#aaa}
+.buy{background:#00ff88;color:#000;width:48%}
+.sell{background:#ff3b3b;color:#fff;width:48%}
+.signal-buy{color:#00ff88} .signal-sell{color:#ff3b3b}
 </style>
 </head>
 <body>
 
-<div class="card">
-<h3>PAXG GOLD BOT</h3>
-Balance: ₹<span id="bal">527</span> | Market: PAXGINR<br><br>
-<button id="modeBtn" class="demo" onclick="toggleMode()">MODE: DEMO</button>
-<button id="autoBtn" onclick="toggleAuto()">AUTO: OFF</button>
+<div class="top">
+<button id="demoBtn" class="demo" onclick="setMode('DEMO')">✏️ DEMO ₹10K</button>
+<button id="realBtn" class="real" onclick="setMode('REAL')">💰 REAL CoinDCX</button>
+</div>
+
+<div class="ai">
+<div class="ai-icon">AI</div>
+<div><b>AutoTrading <span style="color:#8b5cf6">AI</span></b><br><small id="modeText" style="color:#00ff88">● REAL PAXG LIVE</small></div>
+<button class="stop" id="autoBtn" onclick="toggleAuto()">STOP</button>
 </div>
 
 <div class="card">
-<canvas id="chart" height="200"></canvas>
-<div id="signal" style="font-size:18px;margin-top:10px;font-weight:bold">Signal: WAIT...</div>
-<div id="price" style="color:#888">Price: Loading...</div>
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div>
+<div style="color:#888;font-size:12px">TOTAL BALANCE</div>
+<div class="bal">₹<span id="balAmt">527.00</span></div>
+<div style="color:#666;font-size:12px">real • <span id="coinBal">0.00115 PAXG</span></div>
+</div>
+<button class="refresh" onclick="loadData()">Refresh 🔄</button>
+</div>
 </div>
 
 <div class="card">
-<button class="buy" onclick="doTrade('buy')">BUY GOLD ₹500</button>
-<button class="sell" onclick="doTrade('sell')">SELL GOLD</button>
+<div style="display:flex;justify-content:space-between"><div><button style="background:#8b5cf6;border-radius:20px;padding:6px 14px;border:none;color:#fff">1D</button> <button style="background:#222;border-radius:20px;padding:6px 14px;border:none;color:#888">7D</button></div><small style="color:#666">PAXG/INR • 1m</small></div>
+<canvas id="chart" height="280"></canvas>
+<div id="signal" style="margin-top:10px;font-weight:bold;font-size:18px">Signal: WAIT...</div>
+<div id="priceLine" style="color:#888;font-size:12px">Price: Loading...</div>
 </div>
 
-<div class="card" id="logs">Logs yaha ayenge...<br></div>
+<div class="card" style="margin-bottom:80px">
+<button class="buy" onclick="trade('buy')">BUY GOLD ₹500</button>
+<button class="sell" onclick="trade('sell')">SELL GOLD</button>
+<div id="logs" style="margin-top:12px;font-size:11px;color:#888;max-height:120px;overflow:auto"></div>
+</div>
+
+<div class="bottom">
+<button class="home">🏠 HOME</button>
+<button class="history" onclick="alert('History CoinDCX app me dekho')">📊 HISTORY</button>
+</div>
 
 <script>
-let MODE = 'DEMO';
-let AUTO = false;
-let myChart = null;
-
-function toggleMode(){
-  MODE = MODE==='DEMO' ? 'LIVE' : 'DEMO';
-  let btn = document.getElementById('modeBtn');
-  btn.innerText = 'MODE: '+MODE;
-  btn.className = MODE==='LIVE' ? 'live' : 'demo';
-  addLog('Mode changed to '+MODE);
-}
-
-function toggleAuto(){
-  AUTO = !AUTO;
-  document.getElementById('autoBtn').innerText = 'AUTO: '+(AUTO?'ON':'OFF');
-  addLog('Auto '+ (AUTO?'ON':'OFF'));
-}
-
-function addLog(t){
-  let l = document.getElementById('logs');
-  l.innerHTML = new Date().toLocaleTimeString() + ' - ' + t + '<br>' + l.innerHTML;
-}
-
-async function loadCandles(){
+let MODE='REAL', AUTO=true, myChart=null;
+function setMode(m){ MODE=m; document.getElementById('modeText').innerText = m==='REAL' ? '● REAL PAXG LIVE' : '● DEMO MODE'; document.getElementById('demoBtn').className = m==='DEMO'?'real':'demo'; document.getElementById('realBtn').className = m==='REAL'?'real':'demo'; addLog('Mode: '+m); }
+function toggleAuto(){ AUTO=!AUTO; document.getElementById('autoBtn').innerText=AUTO?'STOP':'START'; document.getElementById('autoBtn').style.color=AUTO?'#ff3b3b':'#00ff88'; addLog('Auto '+(AUTO?'ON':'OFF')); }
+function addLog(t){ let l=document.getElementById('logs'); l.innerHTML=new Date().toLocaleTimeString()+' - '+t+'<br>'+l.innerHTML; }
+async function loadData(){
   try{
-    let res = await fetch('/api/candles');
-    let data = await res.json();
-    if(!data || !data.length) return;
-    let closes = data.map(c=>c.close);
-    let labels = data.map((_,i)=>i);
-    let last = closes[closes.length-1];
-    document.getElementById('price').innerText = 'Price: ₹'+last;
-
-    let signal = 'WAIT';
-    if(closes[closes.length-1] > closes[closes.length-5]) signal='BUY';
-    else signal='SELL';
-    document.getElementById('signal').innerText = 'Signal: '+signal;
-    document.getElementById('signal').style.color = signal==='BUY' ? '#00ff88' : '#ff3b3b';
-
-    if(AUTO && MODE==='LIVE' && signal!=='WAIT'){
-      doTrade(signal.toLowerCase());
-    }
-
+    let r=await fetch('/api/candles'); let data=await r.json();
+    data=data.filter(c=>c.close>430000 && c.close<450000);
+    let closes=data.map(c=>c.close);
+    if(!closes.length) return;
+    document.getElementById('priceLine').innerText='Price: ₹'+closes[closes.length-1].toFixed(2);
+    let sig=closes[closes.length-1] > closes[closes.length-5] ? 'BUY' : 'SELL';
+    let el=document.getElementById('signal'); el.innerText='Signal: '+sig; el.className=sig==='BUY'?'signal-buy':'signal-sell';
     if(myChart) myChart.destroy();
-    myChart = new Chart(document.getElementById('chart'), {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [{ label: 'PAXG', data: closes, borderColor: '#00ff88', tension: 0.3, pointRadius: 0 }]
-      },
-      options: { plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{display:true}} }
-    });
-
-  }catch(e){ addLog('Candle Error: '+e.message); }
+    myChart=new Chart(document.getElementById('chart'),{type:'line',data:{labels:closes.map((_,i)=>i),datasets:[{data:closes,borderColor:sig==='BUY'?'#00ff88':'#ff3b3b',tension:0.2,pointRadius:0}]},options:{plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:true,grid:{color:'#222'}}}}});
+    if(AUTO && MODE==='REAL' && sig!=='WAIT'){ trade(sig.toLowerCase()); }
+  }catch(e){ addLog('Error: '+e.message); }
 }
-
-async function doTrade(side){
+async function trade(side){
   addLog(MODE+' '+side.toUpperCase()+' clicked');
-  if(MODE==='DEMO'){
-    addLog('DEMO Trade Done (no real money)');
-    return;
-  }
-  try{
-    let r = await fetch('/api/order',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({side: side})
-    });
-    let d = await r.json();
-    addLog('CoinDCX Reply: '+JSON.stringify(d).substring(0,300));
-  }catch(e){ addLog('Order Error: '+e.message); }
+  if(MODE==='DEMO'){ addLog('DEMO Trade done'); return; }
+  let res=await fetch('/api/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({side})});
+  let d=await res.json(); addLog('CoinDCX: '+JSON.stringify(d).slice(0,200));
 }
-
-setInterval(loadCandles, 7000);
-loadCandles();
+setInterval(loadData,8000); loadData(); setMode('REAL');
 </script>
 </body>
 </html>
