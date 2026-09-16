@@ -4,59 +4,90 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
 <style>
-*{box-sizing:border-box} body{margin:0;background:#000;color:#fff;font-family:Arial;padding:10px;padding-bottom:90px}
-.chart-box{background:#111114;border-radius:24px;padding:8px;height:440px}
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:#fff;font-family:Inter,Arial;padding:12px;padding-bottom:90px}
+.top{display:flex;gap:10px}
+.top button{flex:1;padding:14px 10px;border-radius:16px;font-weight:700;font-size:14px}
+.btn-demo{background:#0e0e0e;color:#888;border:1px solid #2a2a2a}
+.btn-real{background:#8b5cf6;color:#fff;border:none}
+.header{display:flex;align-items:center;gap:12px;margin:18px 2px}
+.logo{width:56px;height:56px;border-radius:16px;background:#111;object-fit:cover;border:1px solid #222}
+.title{font-size:22px;font-weight:800} .title span{color:#a78bfa}
+.live{color:#00ff88;font-size:13px;margin-top:2px}
+.stop{margin-left:auto;background:#1a0a0a;color:#ff4d4d;border:1px solid #3a1a1a;padding:10px 18px;border-radius:20px;font-weight:800}
+.card{background:#141416;border-radius:22px;padding:18px;border:1px solid #1e1e22}
+.bal-label{color:#666;font-size:13px;letter-spacing:1px}
+.bal{font-size:42px;font-weight:900;margin:6px 0}
+.connected{background:#8b5cf6;color:#fff;border:none;padding:10px 18px;border-radius:22px;font-weight:700}
+.chart-box{margin-top:14px;background:#111114;border-radius:22px;padding:8px;height:440px;border:1px solid #1e1e22}
 .row{display:flex;gap:12px;margin-top:14px}
 .box{background:#121215;border-radius:18px;padding:14px;flex:1;border:1px solid #1e1e22}
 .btns{display:flex;gap:12px;margin-top:14px}
 .btn{flex:1;padding:18px;border-radius:16px;border:none;font-weight:900;font-size:16px}
 .btn-buy{background:#00c853;color:#fff} .btn-sell{background:#e53935;color:#fff}
 .btn-bot{background:#8b5cf6;color:#fff;width:100%;padding:18px;border-radius:16px;border:none;font-weight:900;font-size:18px;margin-top:14px}
-.logs{background:#0c0c0e;border-radius:16px;padding:12px;margin-top:14px;font-size:11px;color:#888;max-height:200px;overflow:auto;border:1px solid #1e1e22}
-.nav{position:fixed;bottom:0;left:0;right:0;background:#000;padding:10px;display:flex;gap:10px}
+.logs{background:#0c0c0e;border-radius:16px;padding:12px;margin-top:14px;font-size:11px;color:#888;max-height:180px;overflow:auto;border:1px solid #1e1e22}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#000;padding:10px;display:flex;gap:10px;border-top:1px solid #1a1a1a}
 .nav button{flex:1;padding:16px;border-radius:16px;border:none;font-weight:800}
-.nav .active{background:#8b5cf6;color:#fff} .nav .inactive{background:#1e1e24;color:#888}
 </style>
 </head>
 <body>
-<div class="chart-box" id="chart"></div>
-<div class="row">
-<div class="box"><div style="color:#777;font-size:11px">AI SIGNAL • PAXG GOLD</div><div style="font-size:32px;font-weight:900" id="signal">LOADING...</div><div style="color:#666;font-size:12px" id="priceTxt">PAXG/INR • 5m</div></div>
-<div class="box"><div style="color:#777;font-size:11px">TODAY P/L • GOLD</div><div style="font-size:28px;font-weight:900;color:#00ff88">+₹0.00</div><div style="color:#666;font-size:11px" id="balTxt">REAL GOLD LIVE</div></div>
+
+<div class="top">
+<button class="btn-demo">🖊️ DEMO ₹10K</button>
+<button class="btn-real">💰 REAL CoinDCX</button>
 </div>
+
+<div class="header">
+<img src="logo.png" class="logo" onerror="this.src='https://i.ibb.co/3mQ6z2L/robot.png'">
+<div>
+<div class="title">AutoTrading <span>AI</span></div>
+<div class="live">● REAL CoinDCX Live • PAXG GOLD</div>
+</div>
+<button class="stop" id="stopBtn" onclick="toggleBot()">STOP</button>
+</div>
+
+<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div>
+<div class="bal-label">TOTAL BALANCE</div>
+<div class="bal">₹<span id="inrBal">482.22</span></div>
+<div style="color:#555;font-size:13px">Real CoinDCX Balance • <span id="paxgBal">GOLD</span></div>
+</div>
+<button class="connected" onclick="loadBal()">✅ Connected</button>
+</div>
+</div>
+
+<div class="chart-box" id="chart"></div>
+
+<div class="row">
+<div class="box"><div style="color:#777;font-size:11px">AI SIGNAL • PAXG GOLD</div><div style="font-size:28px;font-weight:900" id="signal">LOADING</div><div style="color:#666;font-size:11px" id="priceTxt">PAXG/INR • 5m • LIVE</div></div>
+<div class="box"><div style="color:#777;font-size:11px">TODAY P/L • GOLD</div><div style="font-size:26px;font-weight:900;color:#00ff88">+₹0.00</div><div style="color:#666;font-size:11px" id="balTxt">0 trades • REAL GOLD</div></div>
+</div>
+
 <div class="btns">
 <button class="btn btn-buy" onclick="doTrade('buy')">BUY GOLD 🚀</button>
 <button class="btn btn-sell" onclick="doTrade('sell')">SELL GOLD ▼</button>
 </div>
+
 <button class="btn-bot" id="botBtn" onclick="toggleBot()">START BOT 🚀 GOLD</button>
-<div class="logs" id="logs">Logs...<br></div>
-<div class="nav"><button class="active">🏠 HOME</button><button class="inactive">📊 HISTORY</button></div>
+<div class="logs" id="logs">✅ GOLD MODE READY<br></div>
+
+<div class="nav">
+<button style="background:#8b5cf6;color:#fff">🏠 HOME</button>
+<button style="background:#1e1e24;color:#888">📊 HISTORY</button>
+</div>
+
 <script>
 let BOT=false;
 let chart=LightweightCharts.createChart(document.getElementById('chart'),{layout:{background:{color:'#111114'},textColor:'#777'},grid:{vertLines:{color:'#1a1a1e'},horzLines:{color:'#1a1a1e'}},rightPriceScale:{borderColor:'#222'},timeScale:{borderColor:'#222',timeVisible:true},width:document.getElementById('chart').clientWidth,height:430});
 let series=chart.addCandlestickSeries({upColor:'#00ff88',downColor:'#ff3b3b',wickUpColor:'#00ff88',wickDownColor:'#ff3b3b',borderVisible:false});
 function addLog(t){document.getElementById('logs').innerHTML=t+"<br>"+document.getElementById('logs').innerHTML;}
-async function loadChart(){
-  try{
-    let data=null;
-    try{ let r=await fetch('/api/candles'); data=await r.json(); if(!data||!data.length) throw "empty"; }catch(e){
-      // Fallback direct — isse chart kabhi khaali nahi rahega
-      let r2=await fetch('https://public.coindcx.com/market_data/candles?pair=B-PAXG_INR&interval=5m&limit=100'); data=await r2.json();
-    }
-    let mapped=data.map(c=>({time:Math.floor(c.time/1000),open:c.open,high:c.high,low:c.low,close:c.close})).sort((a,b)=>a.time-b.time);
-    series.setData(mapped); chart.timeScale().fitContent();
-    let last=mapped[mapped.length-1];
-    document.getElementById('priceTxt').innerText=`PAXG @ ₹${last.close.toFixed(2)} • 5m • LIVE`;
-    let el=document.getElementById('signal');
-    if(last.close>last.open){el.innerText='BUY';el.style.color='#00ff88';}
-    else if(last.close<last.open){el.innerText='SELL';el.style.color='#ff3b3b';}
-    else{el.innerText='HOLD';el.style.color='#fff';}
-    addLog(`Chart OK: ₹${last.close.toFixed(2)}`);
-  }catch(e){ addLog("Chart Error: "+e); }
-}
-async function doTrade(side){addLog(`🚀 REAL ${side.toUpperCase()} GOLD...`); try{let res=await fetch('/api/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({side,market:"PAXGINR"})});let j=await res.json();addLog(`✅ ${JSON.stringify(j).slice(0,200)}`);}catch(e){addLog("❌ "+e.message);}}
-function toggleBot(){BOT=!BOT;let b=document.getElementById('botBtn');b.innerText=BOT?"STOP BOT ⏹️ GOLD":"START BOT 🚀 GOLD";b.style.background=BOT?"#e53935":"#8b5cf6";}
-loadChart(); setInterval(loadChart,15000);
+async function loadBal(){try{let r=await fetch('/api/balance',{method:'POST'});let d=await r.json();if(Array.isArray(d)){let inr=d.find(x=>x.currency==='INR');let paxg=d.find(x=>x.currency==='PAXG');if(inr)document.getElementById('inrBal').innerText=Number(inr.balance).toFixed(2);if(paxg)document.getElementById('paxgBal').innerText=Number(paxg.balance).toFixed(5)+' PAXG';addLog(`✅ REAL: ₹${inr?inr.balance:0}`);}}catch(e){}}
+async function loadChart(){try{let r=await fetch('https://public.coindcx.com/market_data/candles?pair=B-PAXG_INR&interval=5m&limit=100');let d=await r.json();let mapped=d.map(c=>({time:Math.floor(c.time/1000),open:c.open,high:c.high,low:c.low,close:c.close})).sort((a,b)=>a.time-b.time);series.setData(mapped);chart.timeScale().fitContent();let last=mapped[mapped.length-1];document.getElementById('priceTxt').innerText=`PAXG @ ₹${last.close.toFixed(2)} • 5m • GOLD`;let el=document.getElementById('signal');if(last.close>last.open){el.innerText='BUY GOLD';el.style.color='#00ff88';}else if(last.close<last.open){el.innerText='SELL GOLD';el.style.color='#ff3b3b';}else{el.innerText='HOLD';el.style.color='#fff';}if(BOT&&el.innerText!=='HOLD')doTrade(el.innerText.includes('BUY')?'buy':'sell');}catch(e){}}
+async function doTrade(side){addLog(`🚀 REAL ${side.toUpperCase()} 0.001 PAXG GOLD...`);try{let res=await fetch('/api/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({side,market:"PAXGINR"})});let j=await res.json();addLog(`✅ ${JSON.stringify(j).slice(0,200)}`);loadBal();}catch(e){addLog("❌ "+e.message);}}
+function toggleBot(){BOT=!BOT;let b1=document.getElementById('botBtn');let b2=document.getElementById('stopBtn');if(BOT){b1.innerText="STOP BOT ⏹️ GOLD";b1.style.background="#e53935";b2.innerText="STOP";b2.style.color="#ff4d4d";addLog("🟠 BOT STARTED GOLD");}else{b1.innerText="START BOT 🚀 GOLD";b1.style.background="#8b5cf6";b2.innerText="STOP";addLog("🔴 BOT STOPPED");}}
+loadBal(); loadChart(); setInterval(loadChart,15000);
 </script>
 </body>
 </html>
