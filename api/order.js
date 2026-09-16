@@ -1,27 +1,16 @@
 import crypto from 'crypto';
 export default async function handler(req,res){
-  if(req.method!=='POST') return res.status(405).json({error:'POST'});
-  const {side} = req.body;
-  const API_KEY=process.env.COINDCX_KEY;
-  const API_SECRET=process.env.COINDCX_SECRET;
+  res.setHeader('Access-Control-Allow-Origin','*');
+  if(req.method!=='POST') return res.status(405).json({error:'POST only'});
   try{
-    const ts=Date.now();
-    const bodyObj={
-      timestamp: ts,
-      market: 'SHIBINR',
-      side: side,
-      order_type: 'market_order',
-      total_quantity: "400000" // 4 lakh = ~₹196 > 100 min aur tere 482 me ho jayega
-    };
-    const json=JSON.stringify(bodyObj);
-    const sig=crypto.createHmac('sha256',API_SECRET).update(json).digest('hex');
-    let r=await fetch('https://api.coindcx.com/exchange/v1/orders/create',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','X-AUTH-APIKEY':API_KEY,'X-AUTH-SIGNATURE':sig},
-      body: json
-    });
-    let j=await r.json();
-    res.setHeader('Access-Control-Allow-Origin','*');
-    return res.json(j);
-  }catch(e){ return res.json({success:false,error:e.message}); }
+    const {side}=req.body;
+    const key=process.env.COINDCX_KEY;
+    const secret=process.env.COINDCX_SECRET;
+    const INR_AMT = 100; // GOLD minimum
+    const body={side, order_type:"market_order", market:"PAXGINR", total_quantity:INR_AMT, timestamp:Date.now()};
+    const payload=Buffer.from(JSON.stringify(body)).toString();
+    const signature=crypto.createHmac('sha256',secret).update(payload).digest('hex');
+    let r=await fetch('https://api.coindcx.com/exchange/v1/orders/create',{method:'POST', headers:{'X-AUTH-APIKEY':key,'X-AUTH-SIGNATURE':signature}, body:JSON.stringify({payload,signature})});
+    let j=await r.json(); return res.json(j);
+  }catch(e){return res.status(500).json({error:e.message})}
 }
