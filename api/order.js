@@ -1,19 +1,17 @@
 import crypto from 'crypto';
 export default async function handler(req,res){
-  if(req.method!=='POST') return res.status(405).json({success:false, error:'POST only'});
+  if(req.method!=='POST') return res.status(405).json({error:'POST only'});
   const {side, amount} = req.body;
   const API_KEY=process.env.COINDCX_KEY;
   const API_SECRET=process.env.COINDCX_SECRET;
   try{
     const ts=Date.now();
-    // CoinDCX minimum ~0.0002 BTC = ~1500 INR, isliye hum 0.0002 bhej rahe hain
-    let qty = amount;
-    if(qty < 0.0002) qty = 0.0002;
-
+    // SHIBINR me 20000 SHIB = ~₹250, tere ₹482 me ho jayega
+    let qty = amount || 20000;
     const bodyObj={
       timestamp: ts,
-      market: 'BTCINR',
-      side: side, // buy / sell
+      market: 'SHIBINR',
+      side: side,
       order_type: 'market_order',
       total_quantity: qty.toString()
     };
@@ -25,7 +23,7 @@ export default async function handler(req,res){
       body: json
     });
     let j=await r.json();
-    console.log("ORDER RES:", j);
+    res.setHeader('Access-Control-Allow-Origin','*');
     return res.json(j);
   }catch(e){ return res.json({success:false, error:e.message}); }
 }
