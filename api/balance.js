@@ -1,19 +1,16 @@
 import crypto from 'crypto';
 export default async function handler(req,res){
-  const API_KEY=process.env.COINDCX_KEY;
-  const API_SECRET=process.env.COINDCX_SECRET;
+  res.setHeader('Access-Control-Allow-Origin','*');
   try{
-    const ts=Date.now();
-    const body={timestamp:ts};
-    const json=JSON.stringify(body);
-    const sig=crypto.createHmac('sha256',API_SECRET).update(json).digest('hex');
+    const key=process.env.COINDCX_KEY, secret=process.env.COINDCX_SECRET;
+    const body={timestamp:Date.now()};
+    const payload=Buffer.from(JSON.stringify(body)).toString('base64');
+    const signature=crypto.createHmac('sha256',secret).update(payload).digest('hex');
     let r=await fetch('https://api.coindcx.com/exchange/v1/users/balances',{
-      method:'POST',headers:{'Content-Type':'application/json','X-AUTH-APIKEY':API_KEY,'X-AUTH-SIGNATURE':sig},body:json
+      method:'POST', headers:{'X-AUTH-APIKEY':key,'X-AUTH-SIGNATURE':signature,'Content-Type':'application/json'},
+      body:JSON.stringify({payload,signature})
     });
-    let j=await r.json();
-    let inr=0;
-    if(Array.isArray(j)){ let f=j.find(x=>x.currency=='INR'); inr=parseFloat(f?.balance||0); }
-    res.setHeader('Access-Control-Allow-Origin','*');
-    return res.json({success:true,balance:inr,full:j});
-  }catch(e){ return res.json({success:false,error:e.message}); }
+    let data=await r.json();
+    return res.json(data);
+  }catch(e){ return res.json({error:e.message}); }
 }
