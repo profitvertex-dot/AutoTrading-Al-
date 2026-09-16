@@ -1,13 +1,14 @@
 import crypto from 'crypto';
 export default async function handler(req,res){
   if(req.method!=='POST') return res.status(405).json({error:'POST only'});
-  const {side, amount} = req.body;
+  const {side} = req.body;
   const API_KEY=process.env.COINDCX_KEY;
   const API_SECRET=process.env.COINDCX_SECRET;
   try{
     const ts=Date.now();
-    // SHIBINR me 20000 SHIB = ~₹250, tere ₹482 me ho jayega
-    let qty = amount || 20000;
+    // SHIBINR ka minimum 100000 hai, hum 150000 bhej rahe hain = ~₹200, tere ₹482 me ho jayega
+    let qty = 150000; 
+    
     const bodyObj={
       timestamp: ts,
       market: 'SHIBINR',
