@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AutoTrading AI - CoinDCX LIVE</title>
-<link rel="icon" href="logo.png">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AutoTrading AI - LIVE</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
 <style>body{background:#07070B;color:#fff}.card{background:#15151D;border:1px solid #232330}.active-acc{background:#8b5cf6!important;color:white!important}.nav-active{background:#8b5cf6;color:white}</style>
@@ -16,141 +14,43 @@
 <button id="realBtn" onclick="setAccount('real')" class="flex-1 py-2.5 rounded-xl font-black text-[12px] border bg-[#1E1E2A] text-zinc-400">💰 REAL CoinDCX</button>
 </div>
 <div class="flex items-center justify-between mb-4">
-<div class="flex items-center gap-3"><img src="logo.png" class="w-11 h-11 rounded-xl"><div><h1 class="font-black text-[16px]">AutoTrading <span class="text-violet-400">AI</span></h1><p id="accLabel" class="text-[9px] text-green-400 font-bold">● DEMO MODE</p></div></div>
-<div id="status" class="px-3 py-1.5 rounded-full text-[11px] font-black bg-red-500/15 text-red-400 border border-red-500/20">STOP</div>
+<div class="flex items-center gap-3"><div class="w-11 h-11 bg-violet-600 rounded-xl flex items-center justify-center font-black">AI</div><div><h1 class="font-black text-[16px]">AutoTrading <span class="text-violet-400">AI</span></h1><p id="accLabel" class="text-[9px] text-green-400 font-bold">● DEMO MODE</p></div></div>
+<div id="status" class="px-3 py-1.5 rounded-full text-[11px] font-black bg-red-500/15 text-red-400 border">STOP</div>
 </div>
-
 <div id="homePage">
-<div class="card rounded-[22px] p-4">
-<div class="flex justify-between items-center"><div><p class="text-[10px] text-zinc-500 font-bold">TOTAL BALANCE</p><h2 class="text-4xl font-black mt-1">₹<span id="bal">10000.00</span></h2><p id="balSub" class="text-[11px] text-zinc-500 mt-1">Demo Balance</p></div><button id="connectBtn" onclick="connectReal()" class="px-4 py-2 bg-violet-600 rounded-xl text-xs font-black">Connect CoinDCX 🔑</button></div>
-</div>
-<div class="card rounded-[22px] p-3 mt-4">
-<div class="flex justify-between items-center mb-2">
-<div class="flex gap-1.5"><button onclick="setTF('1')" id="tf1" class="active-acc px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A]">1D</button><button onclick="setTF('7')" id="tf7" class="px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A] text-zinc-400">7D</button></div>
-<p id="price" class="text-[13px] font-black text-violet-400 bg-violet-500/10 px-3 py-1 rounded-full">Loading...</p>
-</div>
-<div id="tv" style="height:360px;width:100%"></div>
-</div>
-<div class="grid grid-cols-2 gap-3 mt-4">
-<div class="card rounded-2xl p-4"><p class="text-[10px] text-zinc-500 font-bold">AI SIGNAL</p><p id="sig" class="text-2xl font-black mt-1">HOLD</p><p class="text-[11px] text-zinc-500">RSI <span id="rsi" class="text-white font-bold">--</span></p></div>
-<div class="card rounded-2xl p-4"><p class="text-[10px] text-zinc-500 font-bold">TODAY P/L</p><p id="pnl" class="text-xl font-black text-green-400 mt-1">+₹0.00</p><p class="text-[11px] text-zinc-500"><span id="trades">0 trades</span> • <span id="modeTag">DEMO</span> • LIVE</p></div>
-</div>
+<div class="card rounded-[22px] p-4"><div class="flex justify-between"><div><p class="text-[10px] text-zinc-500 font-bold">TOTAL BALANCE</p><h2 class="text-4xl font-black mt-1">₹<span id="bal">10000.00</span></h2><p id="balSub" class="text-[11px] text-zinc-500 mt-1">Demo</p></div><button id="connectBtn" onclick="connectReal()" class="px-4 py-2 bg-violet-600 rounded-xl text-xs font-black">Connect 🔑</button></div></div>
+<div class="card rounded-[22px] p-3 mt-4"><div class="flex justify-between mb-2"><div class="flex gap-1.5"><button onclick="setTF('1')" id="tf1" class="active-acc px-3 py-1 rounded-full text-[11px] font-bold">1D</button><button onclick="setTF('7')" id="tf7" class="px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A] text-zinc-400">7D</button></div><p id="price" class="text-[13px] font-black text-violet-400 bg-violet-500/10 px-3 py-1 rounded-full">Loading...</p></div><div id="tv" style="height:360px;width:100%"></div></div>
+<div class="grid grid-cols-2 gap-3 mt-4"><div class="card rounded-2xl p-4"><p class="text-[10px] text-zinc-500 font-bold">AI SIGNAL</p><p id="sig" class="text-2xl font-black mt-1">HOLD</p><p class="text-[11px] text-zinc-500">RSI <span id="rsi">--</span></p></div><div class="card rounded-2xl p-4"><p class="text-[10px] text-zinc-500 font-bold">TODAY P/L</p><p id="pnl" class="text-xl font-black text-green-400 mt-1">+₹0.00</p><p class="text-[11px] text-zinc-500"><span id="trades">0 trades</span> • <span id="modeTag">DEMO</span></p></div></div>
 <div class="grid grid-cols-2 gap-3 mt-3"><button onclick="manualTrade('BUY')" class="py-3.5 bg-green-600 rounded-2xl font-black text-sm">BUY 🚀</button><button onclick="manualTrade('SELL')" class="py-3.5 bg-red-600 rounded-2xl font-black text-sm">SELL 🔻</button></div>
 <button id="btn" class="w-full mt-3 py-4 rounded-2xl font-black bg-violet-600">START BOT 🚀</button>
-<div id="logs" class="card rounded-2xl p-3 mt-3 h-32 overflow-auto text-[10px] font-mono text-zinc-400">🤖 Ready - CoinDCX LIVE<br></div>
+<div id="logs" class="card rounded-2xl p-3 mt-3 h-36 overflow-auto text-[10px] font-mono text-zinc-400">🤖 Ready - SHIB LIVE 150k<br></div>
 </div>
-
-<div id="historyPage" class="hidden">
-<div class="flex justify-between items-center mb-3"><h2 class="text-[18px] font-black">📜 Trade History</h2><div class="flex gap-2"><button onclick="filterHistory('all')" id="fAll" class="nav-active px-3 py-1 rounded-full text-[10px] font-black">ALL</button><button onclick="filterHistory('real')" id="fReal" class="px-3 py-1 rounded-full text-[10px] font-black bg-[#1E1E2A]">REAL</button><button onclick="filterHistory('demo')" id="fDemo" class="px-3 py-1 rounded-full text-[10px] font-black bg-[#1E1E2A]">DEMO</button></div></div>
-<div class="grid grid-cols-3 gap-2 mb-3"><div class="card rounded-xl p-3 text-center"><p class="text-[9px] text-zinc-500">TOTAL TRADES</p><p id="hTotal" class="font-black text-[16px]">0</p></div><div class="card rounded-xl p-3 text-center"><p class="text-[9px] text-zinc-500">TOTAL P/L</p><p id="hPnl" class="font-black text-[16px] text-green-400">₹0</p></div><div class="card rounded-xl p-3 text-center"><p class="text-[9px] text-zinc-500">WIN RATE</p><p id="hWin" class="font-black text-[16px]">0%</p></div></div>
-<div id="historyList" class="space-y-2"></div>
-<div class="flex gap-2 mt-4"><button onclick="exportCSV()" class="flex-1 py-2.5 bg-[#1E1E2A] border rounded-xl text-[11px] font-black">📤 Export CSV</button><button onclick="clearHistory()" class="flex-1 py-2.5 bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-[11px] font-black">🗑️ Clear All</button></div>
+<div id="historyPage" class="hidden"><h2 class="text-[18px] font-black mb-3">📜 History</h2><div id="historyList" class="space-y-2"></div><button onclick="clearHistory()" class="w-full mt-4 py-2.5 bg-red-500/20 text-red-400 border rounded-xl text-[11px] font-black">Clear</button></div>
 </div>
-</div>
-
 <div class="fixed bottom-0 left-0 right-0 bg-[#0F0F14] border-t border-[#232330] p-2"><div class="max-w-md mx-auto flex gap-2"><button id="navHome" onclick="showPage('home')" class="nav-active flex-1 py-3 rounded-xl font-black text-[12px]">🏠 HOME</button><button id="navHist" onclick="showPage('history')" class="flex-1 py-3 rounded-xl font-black text-[12px] bg-[#1E1E2A] text-zinc-400">📊 HISTORY</button></div></div>
-
 <script>
 let accountMode=localStorage.getItem('accMode')||'demo';
 let balances=JSON.parse(localStorage.getItem('balances')||'{"demo":10000,"real":482.22}');
 let tradesCount=JSON.parse(localStorage.getItem('tradesCount')||'{"demo":0,"real":0}');
 let pnl=JSON.parse(localStorage.getItem('pnl')||'{"demo":0,"real":0}');
 let tradeHistory=JSON.parse(localStorage.getItem('tradeHistory')||'[]');
-let candles=[],chart,candleSeries,markers=[],currentTF='1',lastSignalTime=0,position=null,currentFilter='all';
+let candles=[],chart,candleSeries,position=null,currentTF='1';
 const el=document.getElementById('tv');
-chart=LightweightCharts.createChart(el,{layout:{background:{color:'#15151D'},textColor:'#999'},grid:{vertLines:{color:'#1E1E2A'},horzLines:{color:'#1E1E2A'}},width:el.clientWidth,height:360,timeScale:{timeVisible:true,borderColor:'#232330'},rightPriceScale:{borderColor:'#232330'}});
-candleSeries=chart.addCandlestickSeries({upColor:'#22c55e',downColor:'#ef4444',borderUpColor:'#22c55e',borderDownColor:'#ef4444',wickUpColor:'#22c55e',wickDownColor:'#ef4444'});
-function showPage(p){
-  document.getElementById('homePage').classList.toggle('hidden',p!='home');
-  document.getElementById('historyPage').classList.toggle('hidden',p!='history');
-  document.getElementById('navHome').className=p=='home'?'nav-active flex-1 py-3 rounded-xl font-black text-[12px]':'flex-1 py-3 rounded-xl font-black text-[12px] bg-[#1E1E2A] text-zinc-400';
-  document.getElementById('navHist').className=p=='history'?'nav-active flex-1 py-3 rounded-xl font-black text-[12px]':'flex-1 py-3 rounded-xl font-black text-[12px] bg-[#1E1E2A] text-zinc-400';
-  if(p=='history') renderHistory();
-}
+chart=LightweightCharts.createChart(el,{layout:{background:{color:'#15151D'},textColor:'#999'},grid:{vertLines:{color:'#1E1E2A'},horzLines:{color:'#1E1E2A'}},width:el.clientWidth,height:360});
+candleSeries=chart.addCandlestickSeries({upColor:'#22c55e',downColor:'#ef4444',borderVisible:false,wickUpColor:'#22c55e',wickDownColor:'#ef4444'});
+function showPage(p){document.getElementById('homePage').classList.toggle('hidden',p!='home');document.getElementById('historyPage').classList.toggle('hidden',p!='history');document.getElementById('navHome').className=p=='home'?'nav-active flex-1 py-3 rounded-xl font-black text-[12px]':'flex-1 py-3 rounded-xl font-black text-[12px] bg-[#1E1E2A] text-zinc-400';document.getElementById('navHist').className=p=='history'?'nav-active flex-1 py-3 rounded-xl font-black text-[12px]':'flex-1 py-3 rounded-xl font-black text-[12px] bg-[#1E1E2A] text-zinc-400';if(p=='history')renderHistory();}
 function saveAll(){localStorage.setItem('balances',JSON.stringify(balances));localStorage.setItem('tradesCount',JSON.stringify(tradesCount));localStorage.setItem('pnl',JSON.stringify(pnl));localStorage.setItem('tradeHistory',JSON.stringify(tradeHistory));localStorage.setItem('accMode',accountMode);}
-function addToHistory(type,price,profit=null,profitPct=null){
-  tradeHistory.unshift({id:Date.now(),time:new Date().toLocaleString('en-IN'),mode:accountMode,type:type,price:price,profit:profit,profitPct:profitPct});
-  saveAll();
-}
-function setAccount(mode){
-  accountMode=mode;saveAll();
-  document.getElementById('demoBtn').className=mode=='demo'?'active-acc flex-1 py-2.5 rounded-xl font-black text-[12px] border bg-[#1E1E2A]':'flex-1 py-2.5 rounded-xl font-black text-[12px] border bg-[#1E1E2A] text-zinc-400';
-  document.getElementById('realBtn').className=mode=='real'?'active-acc flex-1 py-2.5 rounded-xl font-black text-[12px] border bg-[#1E1E2A]':'flex-1 py-2.5 rounded-xl font-black text-[12px] border bg-[#1E1E2A] text-zinc-400';
-  document.getElementById('accLabel').innerText=mode=='demo'?'● DEMO ₹10000':'● REAL CoinDCX Live';
-  document.getElementById('bal').innerText=balances[mode].toFixed(2);
-  document.getElementById('balSub').innerText=mode=='demo'?'Demo Practice Balance':'Real CoinDCX Balance';
-  document.getElementById('modeTag').innerText=mode.toUpperCase();
-  document.getElementById('connectBtn').style.display=mode=='real'?'block':'none';
-  document.getElementById('trades').innerText=tradesCount[mode]+' trades';
-  document.getElementById('pnl').innerText=(pnl[mode]>=0?'+':'')+'₹'+pnl[mode].toFixed(2);
-}
-async function connectReal(){
-  document.getElementById('logs').innerHTML=`⏳ CoinDCX Balance...<br>`+document.getElementById('logs').innerHTML;
-  try{let r=await fetch('/api/balance');let j=await r.json();if(j.success||j.balance!=undefined){balances.real=j.balance;saveAll();setAccount('real');document.getElementById('connectBtn').innerText='✅ Connected';document.getElementById('logs').innerHTML=`✅ REAL: ₹${j.balance}<br>`+document.getElementById('logs').innerHTML;}}
-  catch(e){document.getElementById('connectBtn').innerText='Connect 🔑';}
-}
-function manualTrade(type){
-  let price=candles[candles.length-1]?.close||7542000;
-  if(type=='BUY'&&!position){
-    position={price};addToHistory('BUY',price);
-    document.getElementById('logs').innerHTML=`🟢 ${accountMode} BUY @ ₹${Math.round(price).toLocaleString()}<br>`+document.getElementById('logs').innerHTML;
-    if(accountMode=='real')placeRealOrder('buy',price);
-  }else if(type=='SELL'&&position){
-    let profitPct=(price-position.price)/position.price*100;let profitAmt=balances[accountMode]*0.02*profitPct/100;
-    pnl[accountMode]+=profitAmt;balances[accountMode]+=profitAmt;tradesCount[accountMode]++;
-    addToHistory('SELL',price,profitAmt,profitPct);position=null;saveAll();setAccount(accountMode);
-    document.getElementById('logs').innerHTML=`🔴 ${accountMode} SELL ${profitPct.toFixed(2)}%<br>`+document.getElementById('logs').innerHTML;
-    if(accountMode=='real')placeRealOrder('sell',price);
-  }
-}
-async function placeRealOrder(side,price){
-  try{
-    let qty=0.0002; // FIXED: CoinDCX minimum
-    document.getElementById('logs').innerHTML=`🚀 REAL ${side.toUpperCase()} ${qty} BTC...<br>`+document.getElementById('logs').innerHTML;
-    let ro=await fetch('/api/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({side:side,amount:qty})});
-    let rj=await ro.json();
-    document.getElementById('logs').innerHTML=`✅ Order Res: ${JSON.stringify(rj).slice(0,200)}<br>`+document.getElementById('logs').innerHTML;
-    setTimeout(connectReal,3000);
-  }catch(e){document.getElementById('logs').innerHTML=`❌ Fail: ${e.message}<br>`+document.getElementById('logs').innerHTML;}
-}
-function filterHistory(f){currentFilter=f;document.getElementById('fAll').className=f=='all'?'nav-active px-3 py-1 rounded-full text-[10px] font-black':'px-3 py-1 rounded-full text-[10px] font-black bg-[#1E1E2A] text-zinc-400';document.getElementById('fReal').className=f=='real'?'nav-active px-3 py-1 rounded-full text-[10px] font-black':'px-3 py-1 rounded-full text-[10px] font-black bg-[#1E1E2A] text-zinc-400';document.getElementById('fDemo').className=f=='demo'?'nav-active px-3 py-1 rounded-full text-[10px] font-black':'px-3 py-1 rounded-full text-[10px] font-black bg-[#1E1E2A] text-zinc-400';renderHistory();}
-function renderHistory(){
-  let filtered=currentFilter=='all'?tradeHistory:tradeHistory.filter(t=>t.mode==currentFilter);
-  document.getElementById('hTotal').innerText=filtered.length;
-  let totalPnl=filtered.reduce((a,b)=>a+(b.profit||0),0);document.getElementById('hPnl').innerText='₹'+totalPnl.toFixed(2);
-  let wins=filtered.filter(t=>t.profit>0).length;let winRate=filtered.length?Math.round(wins/filtered.filter(t=>t.profit!=null).length*100)||0:0;document.getElementById('hWin').innerText=winRate+'%';
-  let html='';if(filtered.length==0){html='<p class="text-center text-zinc-500 text-[12px] mt-10">No trades yet</p>';}
-  filtered.forEach(t=>{let isBuy=t.type=='BUY';html+=`<div class="card rounded-xl p-3 flex justify-between items-center"><div><p class="text-[11px] font-black ${isBuy?'text-green-400':'text-red-400'}">${isBuy?'🟢':'🔴'} ${t.type} • ${t.mode.toUpperCase()} • ₹${Math.round(t.price).toLocaleString('en-IN')}</p><p class="text-[9px] text-zinc-500 mt-1">${t.time}</p></div><div class="text-right">${t.profit!=null?`<p class="text-[12px] font-black ${t.profit>=0?'text-green-400':'text-red-400'}">${t.profit>=0?'+':''}₹${t.profit.toFixed(2)}</p><p class="text-[9px] ${t.profit>=0?'text-green-400':'text-red-400'}">${t.profitPct.toFixed(2)}%</p>`:`<p class="text-[10px] text-zinc-400">OPEN</p>`}</div></div>`;});
-  document.getElementById('historyList').innerHTML=html;
-}
-function exportCSV(){let csv='Time,Mode,Type,Price,Profit,Profit%\n';tradeHistory.forEach(t=>{csv+=`"${t.time}",${t.mode},${t.type},${t.price},${t.profit||''},${t.profitPct||''}\n`});let blob=new Blob([csv],{type:'text/csv'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='trade_history.csv';a.click();}
-function clearHistory(){if(confirm('Sari history delete karni hai?')){tradeHistory=[];tradesCount={demo:0,real:0};pnl={demo:0,real:0};saveAll();renderHistory();setAccount(accountMode);}}
-function setTF(days){currentTF=days;document.getElementById('tf1').className=days=='1'?'active-acc px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A]':'px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A] text-zinc-400';document.getElementById('tf7').className=days=='7'?'active-acc px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A]':'px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A] text-zinc-400';load();}
-async function load(){
-  try{
-    let interval=currentTF=='1'?'15m':'1h';
-    let r=await fetch(`/api/candles?interval=${interval}`);let d=await r.json();
-    if(!Array.isArray(d)||d.length==0) throw 'no data';
-    d=d.reverse().filter(c=>{
-      let diff=(parseFloat(c.high)-parseFloat(c.low))/parseFloat(c.open)*100;
-      return diff < 1.5;
-    });
-    candles=d.map(c=>({time:Math.floor(c.time/1000),open:parseFloat(c.open),high:parseFloat(c.high),low:parseFloat(c.low),close:parseFloat(c.close)}));
-    candleSeries.setData(candles);chart.timeScale().fitContent();
-    document.getElementById('price').innerText='₹'+Math.round(candles[candles.length-1].close).toLocaleString('en-IN');
-  }catch(e){document.getElementById('logs').innerHTML=`❌ Candle Error: ${e}<br>`+document.getElementById('logs').innerHTML;}
-}
-async function tick(){try{let r=await fetch('/api/ticker');let j=await r.json();let btc=Array.isArray(j)?j.find(x=>x.market=='BTCINR'):null;if(!btc) return;let p=parseFloat(btc.last_price);document.getElementById('price').innerText='₹'+Math.round(p).toLocaleString('en-IN');let last=candles[candles.length-1];if(!last) return;last.close=p;last.high=Math.max(last.high,p);last.low=Math.min(last.low,p);candleSeries.update(last);calcRSI();}catch(e){}}
-function calcRSI(){
-  if(candles.length<15) return;
-  let cl=candles.map(c=>c.close);let g=0,l=0;for(let i=cl.length-14;i<cl.length;i++){let diff=cl[i]-cl[i-1];if(diff>=0)g+=diff;else l-=diff;}
-  let rs=(g/14)/((l/14)||0.00001);let rsi=100-(100/(1+rs));
-  document.getElementById('rsi').innerText=rsi.toFixed(1);let sig=rsi<35?'BUY':rsi>70?'SELL':'HOLD';document.getElementById('sig').innerText=sig;
-  let now=Date.now();if(sig!='HOLD'&&now-lastSignalTime>90000){lastSignalTime=now;let last=candles[candles.length-1];markers.push({time:last.time,position:sig=='BUY'?'belowBar':'aboveBar',color:sig=='BUY'?'#22c55e':'#ef4444',shape:sig=='BUY'?'arrowUp':'arrowDown',text:sig});if(markers.length>10)markers.shift();candleSeries.setMarkers(markers);document.getElementById('logs').innerHTML=`🤖 Signal: ${sig} RSI ${rsi.toFixed(1)}<br>`+document.getElementById('logs').innerHTML;if(document.getElementById('status').innerText=='RUNNING'){manualTrade(sig);}}
-}
-setAccount(accountMode);load();setInterval(tick,3000);setInterval(load,60000);
-document.getElementById('btn').onclick=()=>{let s=document.getElementById('status'),b=document.getElementById('btn');if(s.innerText==='STOP'){s.innerText='RUNNING';s.className='px-3 py-1.5 rounded-full text-[11px] font-black bg-green-500/15 text-green-400 border border-green-500/20';b.innerText='STOP BOT ⏹️';b.className='w-full mt-3 py-4 rounded-2xl font-black bg-red-500';document.getElementById('logs').innerHTML=`▶️ BOT STARTED ${accountMode.toUpperCase()}<br>`+document.getElementById('logs').innerHTML;}else{s.innerText='STOP';s.className='px-3 py-1.5 rounded-full text-[11px] font-black bg-red-500/15 text-red-400 border border-red-500/20';b.innerText='START BOT 🚀';b.className='w-full mt-3 py-4 rounded-2xl font-black bg-violet-600';document.getElementById('logs').innerHTML=`⏹️ BOT STOPPED<br>`+document.getElementById('logs').innerHTML;}};
-renderHistory();
+function setAccount(m){accountMode=m;saveAll();document.getElementById('demoBtn').className=m=='demo'?'active-acc flex-1 py-2.5 rounded-xl font-black text-[12px] border':'flex-1 py-2.5 rounded-xl font-black text-[12px] border bg-[#1E1E2A] text-zinc-400';document.getElementById('realBtn').className=m=='real'?'active-acc flex-1 py-2.5 rounded-xl font-black text-[12px] border':'flex-1 py-2.5 rounded-xl font-black text-[12px] border bg-[#1E1E2A] text-zinc-400';document.getElementById('accLabel').innerText=m=='demo'?'● DEMO':'● REAL SHIB LIVE';document.getElementById('bal').innerText=balances[m].toFixed(2);document.getElementById('balSub').innerText=m=='demo'?'Demo':'Real';document.getElementById('modeTag').innerText=m.toUpperCase();document.getElementById('trades').innerText=tradesCount[m]+' trades';}
+async function connectReal(){let r=await fetch('/api/balance');let j=await r.json();if(j.balance!=undefined){balances.real=j.balance;saveAll();setAccount('real');document.getElementById('connectBtn').innerText='✅ ₹'+j.balance.toFixed(2);document.getElementById('logs').innerHTML=`✅ REAL: ₹${j.balance}<br>`+document.getElementById('logs').innerHTML;}}
+function addHist(type,price){tradeHistory.unshift({time:new Date().toLocaleString('en-IN'),mode:accountMode,type:type,price:price});saveAll();}
+function manualTrade(type){let price=candles[candles.length-1]?.close||7528000;if(type=='BUY'&&!position){position={price};addHist('BUY',price);document.getElementById('logs').innerHTML=`🟢 ${accountMode} BUY @ ${Math.round(price)}<br>`+document.getElementById('logs').innerHTML;if(accountMode=='real')placeRealOrder('buy');}else if(type=='SELL'&&position){position=null;addHist('SELL',price);document.getElementById('logs').innerHTML=`🔴 ${accountMode} SELL<br>`+document.getElementById('logs').innerHTML;if(accountMode=='real')placeRealOrder('sell');}}
+async function placeRealOrder(side){let qty=150000;document.getElementById('logs').innerHTML=`🚀 REAL ${side.toUpperCase()} ${qty} SHIB...<br>`+document.getElementById('logs').innerHTML;let ro=await fetch('/api/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({side:side,amount:qty})});let rj=await ro.json();document.getElementById('logs').innerHTML=`✅ Res: ${JSON.stringify(rj).slice(0,300)}<br>`+document.getElementById('logs').innerHTML;setTimeout(connectReal,3000);}
+function renderHistory(){let h='';tradeHistory.forEach(t=>{h+=`<div class="card rounded-xl p-3 flex justify-between"><p class="text-[11px] font-black ${t.type=='BUY'?'text-green-400':'text-red-400'}">${t.type} ${t.mode.toUpperCase()} ₹${Math.round(t.price)}</p><p class="text-[9px] text-zinc-500">${t.time}</p></div>`});document.getElementById('historyList').innerHTML=h||'<p class="text-center text-zinc-500 text-[12px] mt-10">No trades</p>';}
+function clearHistory(){tradeHistory=[];saveAll();renderHistory();}
+function setTF(d){currentTF=d;document.getElementById('tf1').className=d=='1'?'active-acc px-3 py-1 rounded-full text-[11px] font-bold':'px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A] text-zinc-400';document.getElementById('tf7').className=d=='7'?'active-acc px-3 py-1 rounded-full text-[11px] font-bold':'px-3 py-1 rounded-full text-[11px] font-bold bg-[#1E1E2A] text-zinc-400';load();}
+async function load(){try{let r=await fetch(`/api/candles?interval=${currentTF=='1'?'15m':'1h'}`);let d=await r.json();d=d.reverse();candles=d.map(c=>({time:Math.floor(c.time/1000),open:parseFloat(c.open),high:parseFloat(c.high),low:parseFloat(c.low),close:parseFloat(c.close)}));candleSeries.setData(candles);chart.timeScale().fitContent();document.getElementById('price').innerText='₹'+Math.round(candles[candles.length-1].close).toLocaleString('en-IN');}catch(e){}}
+setAccount(accountMode);load();setInterval(load,60000);renderHistory();
+document.getElementById('btn').onclick=()=>{let s=document.getElementById('status'),b=document.getElementById('btn');if(s.innerText==='STOP'){s.innerText='RUNNING';s.className='px-3 py-1.5 rounded-full text-[11px] font-black bg-green-500/15 text-green-400 border';b.innerText='STOP BOT ⏹️';b.className='w-full mt-3 py-4 rounded-2xl font-black bg-red-500';}else{s.innerText='STOP';s.className='px-3 py-1.5 rounded-full text-[11px] font-black bg-red-500/15 text-red-400 border';b.innerText='START BOT 🚀';b.className='w-full mt-3 py-4 rounded-2xl font-black bg-violet-600';}};
 </script>
 </body>
 </html>
