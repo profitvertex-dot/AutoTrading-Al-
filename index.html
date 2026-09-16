@@ -4,61 +4,72 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
 <style>
-body{background:#0a0a0a;color:#fff;font-family:Arial;margin:0;padding:10px}
-.top{display:flex;gap:10px}
-.top button{flex:1;padding:14px;border-radius:14px;border:1px solid #333;font-weight:bold}
-.demo{background:#1a1a1a;color:#aaa} .real{background:#8b5cf6;color:#fff}
-.card{background:#161616;border-radius:18px;padding:16px;margin:12px 0;border:1px solid #222}
-.bal{font-size:38px;font-weight:800}
-.ai{display:flex;align-items:center;gap:10px}
-.ai-icon{background:#8b5cf6;width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:bold}
-.stop{margin-left:auto;border:1px solid #ff3b3b;color:#ff3b3b;background:#000;padding:8px 18px;border-radius:20px}
-#chart{width:100%;height:320px}
+body{background:#0e0e0e;color:#fff;font-family:sans-serif;margin:0;padding:10px}
+.card{background:#1a1a1a;border-radius:16px;padding:14px;margin:10px 0;border:1px solid #222}
+.btn{flex:1;padding:14px;border-radius:12px;border:none;font-weight:bold}
+.real{background:#8b5cf6;color:#fff} .demo{background:#222;color:#888}
+.bal{font-size:36px;font-weight:900}
+#tvchart{height:300px}
 </style>
 </head>
 <body>
-<div class="top">
-<button id="demoBtn" class="demo" onclick="setMode('DEMO')">✏️ DEMO ₹10K</button>
-<button id="realBtn" class="real" onclick="setMode('REAL')">💰 REAL CoinDCX</button>
+
+<div style="display:flex;gap:8px">
+<button class="btn demo" onclick="location.reload()">✏️ DEMO ₹10K</button>
+<button class="btn real">💰 REAL CoinDCX</button>
 </div>
-<div class="ai" style="margin-top:12px"><div class="ai-icon">AI</div><div><b>AutoTrading AI</b><br><small id="modeText" style="color:#00ff88">● REAL PAXG LIVE</small></div><button class="stop" id="autoBtn" onclick="toggleAuto()">STOP</button></div>
+
+<div class="card" style="display:flex;justify-content:space-between;align-items:center">
+<div>
+<div style="color:#888;font-size:12px">TOTAL BALANCE</div>
+<div class="bal">₹<span id="inr">527.00</span></div>
+<div style="color:#666;font-size:12px" id="paxg">real • 0.00115 PAXG • loading...</div>
+</div>
+<button onclick="getBal()" style="background:#8b5cf6;border:0;color:#fff;padding:10px 14px;border-radius:10px">Refresh 🔄</button>
+</div>
+
 <div class="card">
-<div style="display:flex;justify-content:space-between"><div><div style="color:#888;font-size:11px">TOTAL BALANCE</div><div class="bal">₹<span id="balAmt">527.00</span></div><div style="color:#666;font-size:11px">real • <span id="coinBal">loading...</span></div></div><button onclick="loadBalance()" style="background:#8b5cf6;border:none;color:#fff;padding:10px 16px;border-radius:12px;height:45px">Refresh 🔄</button></div>
+<div style="color:#888;font-size:12px;margin-bottom:6px">PAXG/INR • 1m • <span style="color:#00ff88">GREEN=BUY</span> / <span style="color:#ff3b3b">RED=SELL</span></div>
+<div id="tvchart"></div>
+<div id="sig" style="font-weight:bold;margin-top:8px">Signal: WAIT</div>
 </div>
-<div class="card">
-<div style="display:flex;justify-content:space-between"><div><span style="background:#8b5cf6;padding:5px 12px;border-radius:20px;font-size:12px">1D</span> <span style="background:#222;padding:5px 12px;border-radius:20px;color:#888;font-size:12px">7D</span></div><small style="color:#666">PAXG/INR • 1m • RED/GREEN CANDLE</small></div>
-<div id="chart"></div>
-<div id="signal" style="font-weight:bold;margin-top:8px">Signal: WAIT...</div>
-<div id="price" style="color:#888;font-size:12px"></div>
-<div id="logs" style="font-size:10px;color:#666;margin-top:8px;max-height:100px;overflow:auto"></div>
-</div>
+
 <script>
-let MODE='REAL', AUTO=true, candleSeries, chart;
-function setMode(m){MODE=m; document.getElementById('modeText').innerText=m==='REAL'?'● REAL PAXG LIVE':'● DEMO MODE';}
-function toggleAuto(){AUTO=!AUTO; document.getElementById('autoBtn').innerText=AUTO?'STOP':'START';}
-function addLog(t){document.getElementById('logs').innerHTML=new Date().toLocaleTimeString()+' '+t+'<br>'+document.getElementById('logs').innerHTML;}
-async function loadBalance(){
+let chart = LightweightCharts.createChart(document.getElementById('tvchart'), {
+  layout:{background:{color:'#1a1a1a'},textColor:'#aaa'},
+  grid:{vertLines:{color:'#222'},horzLines:{color:'#222'}},
+  width: document.getElementById('tvchart').clientWidth, height:300
+});
+let candle = chart.addCandlestickSeries({upColor:'#00ff88',downColor:'#ff4444',wickUpColor:'#00ff88',wickDownColor:'#ff4444',borderVisible:false});
+
+async function getBal(){
   try{
-    let r=await fetch('/api/balance',{method:'POST'}); let d=await r.json();
-    if(Array.isArray(d)){ let inr=d.find(x=>x.currency==='INR'); let paxg=d.find(x=>x.currency==='PAXG');
-      if(inr) document.getElementById('balAmt').innerText=parseFloat(inr.balance).toFixed(2);
-      if(paxg) document.getElementById('coinBal').innerText=parseFloat(paxg.balance).toFixed(6)+' PAXG';
-    } else { addLog('Balance: '+JSON.stringify(d).slice(0,100)); }
-  }catch(e){addLog('Bal Error');}
+    let r = await fetch('/api/balance',{method:'POST'});
+    let d = await r.json();
+    if(Array.isArray(d)){
+      let INR = d.find(x=>x.currency==='INR');
+      let PAXG = d.find(x=>x.currency==='PAXG');
+      if(INR) document.getElementById('inr').innerText = Number(INR.balance).toFixed(2);
+      if(PAXG) document.getElementById('paxg').innerText = 'real • '+Number(PAXG.balance).toFixed(6)+' PAXG';
+    }
+  }catch(e){}
 }
-async function loadCandles(){
-  let r=await fetch('/api/candles'); let data=await r.json(); if(!data.length) return;
-  let cdata=data.map(c=>({time:Math.floor(c.time/1000), open:c.open, high:c.high, low:c.low, close:c.close}));
-  candleSeries.setData(cdata);
-  let last=cdata[cdata.length-1]; document.getElementById('price').innerText='Price: ₹'+last.close.toFixed(2);
-  let sig=last.close>last.open?'BUY':'SELL'; let el=document.getElementById('signal'); el.innerText='Signal: '+sig; el.style.color=sig==='BUY'?'#00ff88':'#ff3b3b';
+async function getCandle(){
+  let r = await fetch('/api/candles'); let data = await r.json();
+  data = data.filter(c=>c.close>100000).slice(-50);
+  let final = data.map(c=>({time:Math.floor(c.time/1000), open:c.open, high:c.high, low:c.low, close:c.close}));
+  candle.setData(final);
+  if(final.length){
+    let last = final[final.length-1];
+    let s = last.close > last.open ? 'BUY' : 'SELL';
+    let el = document.getElementById('sig');
+    el.innerText = 'Signal: '+s+' @ ₹'+last.close.toFixed(2);
+    el.style.color = s==='BUY' ? '#00ff88' : '#ff4444';
+  }
 }
-function initChart(){
-  chart=LightweightCharts.createChart(document.getElementById('chart'),{layout:{background:{color:'#161616'},textColor:'#888'},grid:{vertLines:{color:'#222'},horzLines:{color:'#222'}},width:document.getElementById('chart').clientWidth,height:320});
-  candleSeries=chart.addCandlestickSeries({upColor:'#00ff88',downColor:'#ff3b3b',borderVisible:false,wickUpColor:'#00ff88',wickDownColor:'#ff3b3b'});
-  loadCandles(); loadBalance();
-}
-initChart(); setInterval(loadCandles,8000);
+getBal(); getCandle();
+setInterval(getCandle,10000);
+setInterval(getBal,15000);
 </script>
 </body>
 </html>
